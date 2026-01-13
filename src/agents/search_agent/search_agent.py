@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Tuple
 
 from src.agents.base_agent import BaseAgent
-from src.tools.web.search_engine_requests import BingSearch, BochaSearch, SerperSearch
+from src.tools.web.search_engine_pool import create_default_pool
 from src.tools.web.web_crawler import Click
 from src.tools.base import ToolResult
 
@@ -24,9 +24,34 @@ class DeepSearchAgent(BaseAgent):
         memory = None,
         agent_id: str = None
     ):
-        # Use search + click tools directly; no code interpreter required
+        # Use multi-engine search pool for intelligent search with automatic fallback
         if tools is None:
-            tools = [SerperSearch(), Click()]
+            # Create a wrapper tool for SearchEnginePool
+            from src.tools.base import Tool
+            
+            class MultiEngineSearchTool(Tool):
+                """Wrapper to make SearchEnginePool compatible with Tool interface"""
+                def __init__(self):
+                    self.search_pool = create_default_pool()
+                    super().__init__(
+                        name="Multi-Engine Web Search",
+                        description="Search the web using multiple search engines with intelligent fallback (SerpAPI, DuckDuckGo, etc.)",
+                        parameters=[
+                            {"name": "query", "type": "string", "description": "Search query"}
+                        ]
+                    )
+                
+                async def api_function(self, query: str, **kwargs):
+                    """Execute search using the pool with auto strategy"""
+                    from src.tools.web.base_search import SearchResult
+                    results = await self.search_pool.search(
+                        query=query,
+                        max_results=10,
+                        strategy="auto"  # Automatic fallback: SerpAPI -> Tavily -> DuckDuckGo
+                    )
+                    return results if results else []
+            
+            tools = [MultiEngineSearchTool(), Click()]
         super().__init__(
             config=config,
             tools=tools,
@@ -197,11 +222,12 @@ class DeepSearchAgent(BaseAgent):
                     'title': source_title,
                     'content_preview': result[:500] if len(result) > 500 else result
                 }
-            # add to memory
-            if click_result[0].link in self.link2name:
-                click_result[0].name = self.link2name[click_result[0].link]
-            if not ('error' in click_result[0].name.lower()):
-                self.memory.add_data(click_result[0])
+                # add to memory - only if we have results
+                if click_result[0].link in self.link2name:
+                    click_result[0].name = self.link2name[click_result[0].link]
+                if not ('error' in click_result[0].name.lower()):
+                    self.memory.add_data(click_result[0])
+            
             self.memory.add_log(
                 id = click_engine.id, 
                 type=click_engine.type,
@@ -211,6 +237,7 @@ class DeepSearchAgent(BaseAgent):
                 note=f"Click engine {click_engine.name} executed successfully"
             )
             self.logger.info(f"Click action done: url={action_content}")
+
             
         except Exception as e:
             result =  "Failed to fetch url: " + action_content + "\n"

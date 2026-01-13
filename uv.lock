@@ -1103,6 +1103,7 @@ dependencies = [
     { name = "efinance" },
     { name = "fake-useragent" },
     { name = "fastapi" },
+    { name = "google-search-results" },
     { name = "jieba" },
     { name = "json-repair" },
     { name = "matplotlib" },
@@ -1132,6 +1133,7 @@ requires-dist = [
     { name = "efinance", specifier = ">=0.5.5.2" },
     { name = "fake-useragent", specifier = ">=2.2.0" },
     { name = "fastapi", specifier = ">=0.128.0" },
+    { name = "google-search-results", specifier = ">=2.4.2" },
     { name = "jieba", specifier = ">=0.42.0" },
     { name = "json-repair", specifier = ">=0.55.0" },
     { name = "matplotlib", specifier = ">=3.10.8" },
@@ -1434,6 +1436,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/70/ad/d3ac5a102135bd3f1
 wheels = [
     { url = "https://files.pythonhosted.org/packages/84/93/94bc7a89ef4e7ed3666add55cd859d1483a22737251df659bf1aa46e9405/google_genai-1.56.0-py3-none-any.whl", hash = "sha256:9e6b11e0c105ead229368cb5849a480e4d0185519f8d9f538d61ecfcf193b052", size = 426563, upload-time = "2025-12-17T12:35:03.717Z" },
 ]
+
+[[package]]
+name = "google-search-results"
+version = "2.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/77/30/b3a6f6a2e00f8153549c2fa345c58ae1ce8e5f3153c2fe0484d444c3abcb/google_search_results-2.4.2.tar.gz", hash = "sha256:603a30ecae2af8e600b22635757a6df275dad4b934f975e67878ccd640b78245", size = 18818, upload-time = "2023-03-10T11:13:09.953Z" }
 
 [[package]]
 name = "googleapis-common-protos"

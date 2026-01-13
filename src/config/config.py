@@ -2,28 +2,61 @@ import json
 import os
 import re
 import yaml
+from typing import Dict, Any
+from pydantic import ValidationError
 from src.utils import AsyncLLM
+from src.utils.logger import get_logger
+from .models import AppConfig
+
+logger = get_logger()
 
 class Config:
+    """
+    配置管理类，支持 Pydantic 验证
+    """
     def __init__(self, config_file_path=None, config_dict={}):
-        # load default config
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        default_file_path = os.path.join(current_path, "default_config.yaml")
-        self.config = self._load_config(default_file_path)
+        try:
+            # load default config
+            current_path = os.path.dirname(os.path.realpath(__file__))
+            default_file_path = os.path.join(current_path, "default_config.yaml")
+            self.config = self._load_config(default_file_path)
 
-        # load from file
-        self.config_file_path = config_file_path
-        if config_file_path is not None:
-            file_config = self._load_config(config_file_path)
-            self.config.update(file_config)
-        
-        # load from dict
-        self.config.update(config_dict)
-        
-        self._set_dirs()
-        self._set_llms()
+            # load from file
+            self.config_file_path = config_file_path
+            if config_file_path is not None:
+                file_config = self._load_config(config_file_path)
+                self.config.update(file_config)
 
-    
+            # load from dict
+            self.config.update(config_dict)
+
+            # 使用 Pydantic 验证配置
+            self._validate_config()
+
+            self._set_dirs()
+            self._set_llms()
+
+            logger.info("配置加载成功")
+
+        except ValidationError as e:
+            logger.error(f"配置验证失败: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"配置加载失败: {e}")
+            raise
+
+    def _validate_config(self):
+        """使用 Pydantic 验证配置"""
+        try:
+            # 创建 Pydantic 模型实例进行验证
+            validated_config = AppConfig(**self.config)
+            # 将验证后的配置转回字典
+            self.config = validated_config.model_dump()
+            logger.info("配置验证通过")
+        except ValidationError as e:
+            logger.error(f"配置验证失败，详细错误:\n{e}")
+            raise
+
     def _load_config(self, config_file_path):
         def build_yaml_loader():
             loader = yaml.FullLoader

@@ -80,3 +80,7 @@ venv/
 .venv/
 ENV/
 evaluations/
+
+# # some other files
+_DEV_MEMO.md 
+AGENTS.md

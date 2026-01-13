@@ -875,8 +875,12 @@ class ReportGenerator(BaseAgent):
                 section_input_data['section_outline'] = section.outline
                 self.logger.info(f"[Phase1] Section {idx+1}/{len(report.sections)} start")
                 
+                # 在准备执行器之前设置当前任务数据
+                self.current_task_data = section_input_data
+                
                 # Prepare executor with data access functions for agentic workflow
                 await self._prepare_executor()
+
                 
                 # Each section run has its own checkpoint for resume support
                 section_result = await super().async_run(

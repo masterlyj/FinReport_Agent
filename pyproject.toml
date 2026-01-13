@@ -14,6 +14,7 @@ dependencies = [
     "efinance>=0.5.5.2",
     "fake-useragent>=2.2.0",
     "fastapi>=0.128.0",
+    "google-search-results>=2.4.2",
     "jieba>=0.42.0",
     "json-repair>=0.55.0",
     "matplotlib>=3.10.8",

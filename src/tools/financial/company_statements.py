@@ -140,10 +140,39 @@ class BalanceSheet(Tool):
 
     async def api_function(self, stock_code: str, market: str = "HK", period: str = "年度"):
         """
-        Fetch the balance sheet for the requested ticker.
+        Fetch the balance sheet for the requested ticker with multi-source fallback.
+        
+        Data Sources (in priority order):
+        1. Eastmoney (东方财富) - Primary source
+        2. Sina Finance (新浪财经) - Fallback source
         """
         period = "年度"
+        data = None
+        error_msg = None
+        data_source = "Unknown"
+        
+        # Helper function for logging (works both in agent context and standalone)
+        def log_info(msg):
+            if hasattr(self, 'logger'):
+                self.logger.info(msg)
+            else:
+                print(f"[INFO] {msg}")
+        
+        def log_warning(msg):
+            if hasattr(self, 'logger'):
+                self.logger.warning(msg)
+            else:
+                print(f"[WARNING] {msg}")
+        
+        def log_error(msg, exc_info=False):
+            if hasattr(self, 'logger'):
+                self.logger.error(msg, exc_info=exc_info)
+            else:
+                print(f"[ERROR] {msg}")
+        
+        # Try Source 1: Eastmoney (Original API)
         try:
+            log_info(f"Attempting to fetch balance sheet from Eastmoney for {stock_code}")
             if market == "HK":
                 data = ak.stock_financial_hk_report_em(
                     stock = stock_code,
@@ -152,23 +181,58 @@ class BalanceSheet(Tool):
                 )
                 try:
                     data = self._preprocess_data(data)
+                    data_source = "Eastmoney (HK)"
                 except Exception as e:
-                    print("Failed to preprocess balance-sheet data", e)
+                    error_msg = f"Failed to preprocess balance-sheet data: {e}"
+                    log_warning(error_msg)
+                    data_source = "Eastmoney (HK, raw)"
+                    # Keep raw data if preprocessing fails
             elif market == "A":
                 data = ak.stock_balance_sheet_by_yearly_em(
                     symbol = stock_code,
                 )
+                data_source = "Eastmoney (A-share)"
             else:
                 raise ValueError(f"Unsupported market flag: {market}. Use 'HK' or 'A'.")
+            
+            log_info(f"✓ Successfully fetched balance sheet from {data_source}")
+            
         except Exception as e:
-            print("Failed to fetch balance sheet", e)
-            data = None
+            error_msg = f"Eastmoney API failed: {e}"
+            log_warning(error_msg)
+            
+            # Try Source 2: Sina Finance (Fallback)
+            if market == "A":
+                try:
+                    log_info(f"Falling back to Sina Finance API for {stock_code}")
+                    # 新浪财经API需要添加市场前缀（sh/sz）
+                    sina_code = f"sh{stock_code}" if stock_code.startswith('6') else f"sz{stock_code}"
+                    data = ak.stock_financial_report_sina(
+                        stock=sina_code,
+                        symbol="资产负债表"
+                    )
+                    data_source = "Sina Finance (新浪财经)"
+                    error_msg = None  # Clear error since fallback succeeded
+                    log_info(f"✓ Successfully fetched balance sheet from Sina Finance")
+                    
+                except Exception as e2:
+                    error_msg = f"Both sources failed - Eastmoney: {e}, Sina: {e2}"
+                    log_error(error_msg, exc_info=True)
+                    # Return empty DataFrame to prevent subscript errors
+                    data = pd.DataFrame()
+                    data_source = "Failed (all sources)"
+            else:
+                # For HK market, no Sina fallback available
+                log_error(error_msg, exc_info=True)
+                data = pd.DataFrame()
+                data_source = "Failed (Eastmoney only source for HK)"
+        
         return [
             ToolResult(
                 name = f"{self.name} (ticker: {stock_code})",
-                description = f"Balance sheet for ticker {stock_code}.",
+                description = f"Balance sheet for ticker {stock_code}. Source: {data_source}.{' Error: ' + error_msg if error_msg else ''}",
                 data = data,
-                source=f"Eastmoney financials: balance sheet for {stock_code}. https://emweb.securities.eastmoney.com/PC_HSF10/NewFinanceAnalysis/Index?type=web&code={stock_code}#lrb-0."
+                source=f"{data_source} for {stock_code}"
             )
         ]
 

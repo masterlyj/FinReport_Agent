@@ -1,18 +1,30 @@
 import pandas as pd
 import uuid
+from typing import Any, Dict, List, Optional
+from ..utils.retry import async_retry, async_safe_execute
+from ..utils.logger import get_logger
+
+logger = get_logger()
 
 class Tool:
+    """
+    工具基类，提供统一的工具接口和错误处理
+
+    所有工具都应该继承此类并实现 api_function 方法
+    """
     def __init__(
         self,
         name: str,
         description: str,
-        parameters: list[dict]
+        parameters: List[Dict[str, Any]],
+        max_retries: int = 3
     ):
         self.name = name
         self.type = f'tool_{name}'
         self.id = f"tool_{name}_{uuid.uuid4().hex[:8]}"
         self.short_description = description
         self.parameters = parameters
+        self.max_retries = max_retries
 
     def prepare_params(self, task) -> dict:
         """
@@ -35,25 +47,56 @@ class Tool:
         raise NotImplementedError
 
     async def get_data(self, task):
+        """
+        获取数据的主方法，带错误处理和重试机制
+
+        Args:
+            task: 任务对象
+
+        Returns:
+            获取到的数据列表
+        """
         params = self.prepare_params(task)
+
         try:
-            data = await self.api_function(**params)
-            task.all_results.extend(data)
+            # 使用重试机制调用 API
+            data = await self._get_data_with_retry(**params)
+
+            if data and hasattr(task, 'all_results'):
+                task.all_results.extend(data)
+
+            logger.info(f"工具 {self.name} 成功获取数据，数量: {len(data) if data else 0}")
             return data
+
         except Exception as e:
-            print(f"Error: {e}")
+            logger.error(f"工具 {self.name} 获取数据失败: {str(e)}", extra={"tool": self.name, "error": str(e)})
             return []
+
+    async def _get_data_with_retry(self, **params):
+        """内部方法：带重试的数据获取"""
+        # 动态创建带重试的函数
+        @async_retry(max_attempts=self.max_retries, delay=1.0, backoff=2.0)
+        async def _fetch():
+            return await self.api_function(**params)
+
+        return await _fetch()
 
 
 class ToolResult:
-    def __init__(self, name, description, data, source = ""):
+    """
+    工具执行结果的封装类
+
+    提供统一的数据访问接口和格式化输出
+    """
+    def __init__(self, name: str, description: str, data: Any, source: str = ""):
         self.name = name
         self.description = description
+        # 自动解包单元素列表
         if isinstance(data, list) and len(data) == 1:
             data = data[0]
         self.data = data
         self.data_type = type(data)
-        self.source = source  # str, data source
+        self.source = source
 
     def brief_str(self):
         return self.__str__()

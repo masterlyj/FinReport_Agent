@@ -14,6 +14,10 @@ from bs4 import BeautifulSoup
 
 from ..base import Tool, ToolResult
 from .base_search import SearchResult, ImageSearchResult
+from ...utils.logger import get_logger
+
+logger = get_logger()
+
 
 
 class BingSearch(Tool):

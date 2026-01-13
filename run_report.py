@@ -207,7 +207,7 @@ async def run_report(resume: bool = True, max_concurrent: int = None):
         agent_resume = group[0]['task_input']['resume']
         concurrency_info = f" (max concurrent: {max_concurrent})" if max_concurrent else ""
         logger.info(f"\nExecuting priority {priority} group ({len(group)} task(s){concurrency_info})")
-        
+        logger.info(f"DEBUG: Tasks in this group: {[ai['agent'].id for ai in group]}")  # 添加这行
         # Skip tasks that already finished
         tasks_to_run = []
         for agent_info in group:
