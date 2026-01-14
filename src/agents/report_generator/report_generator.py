@@ -129,9 +129,9 @@ class ReportGenerator(BaseAgent):
                 
             ds_agent = self.tools[0]
             try:
-                # Use a thread-safe way to run async in sync if needed, 
-                # but better to ensure the environment supports it.
-                output = asyncio.run(ds_agent.async_run(input_data={
+                # Use run_async_safely to avoid deadlock when called from within an async context
+                from src.utils import run_async_safely
+                output = run_async_safely(ds_agent.async_run(input_data={
                     'task': self.current_task_data.get('task', ''),
                     'query': query
                 }))

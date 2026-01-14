@@ -82,7 +82,8 @@ class DataAnalyzer(BaseAgent):
             return collect_data_list[data_id].data
         def _get_deepsearch_result(query: str):
             ds_agent = tool_list[0]
-            output =  asyncio.run(ds_agent.async_run(input_data={
+            from src.utils import run_async_safely
+            output = run_async_safely(ds_agent.async_run(input_data={
                 'task': current_task_data['task'],
                 'query': query
             }))

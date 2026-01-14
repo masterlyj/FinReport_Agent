@@ -67,7 +67,7 @@ async def run_report(resume: bool = True, max_concurrent: int = None):
         generated_collect_tasks = await memory.generate_collect_tasks(
             query=research_query,
             use_llm_name=use_llm_name,
-            max_num=5,
+            max_num=3,
             existing_tasks=collect_tasks  # Pass existing tasks to avoid duplication
         )
         logger.info(f"Generated {len(generated_collect_tasks)} collect tasks")
@@ -81,7 +81,7 @@ async def run_report(resume: bool = True, max_concurrent: int = None):
         generated_analysis_tasks = await memory.generate_analyze_tasks(
             query=research_query,
             use_llm_name=use_llm_name,
-            max_num=5,
+            max_num=3,
             existing_tasks=analysis_tasks  # Pass existing tasks to avoid duplication
         )
         logger.info(f"Generated {len(generated_analysis_tasks)} analysis tasks")
@@ -115,7 +115,7 @@ async def run_report(resume: bool = True, max_concurrent: int = None):
             'task_input': {
                 'input_data': {'task': f'Research target: {config.config["target_name"]} (ticker: {config.config["stock_code"]}), task: {task}'},
                 'echo': True,
-                'max_iterations': 20,
+                'max_iterations': 8,  # Reduced from 20 to save tokens
                 'resume': resume,
             },
             'agent_kwargs': {
@@ -134,7 +134,7 @@ async def run_report(resume: bool = True, max_concurrent: int = None):
                     'analysis_task': task
                 },
                 'echo': True,
-                'max_iterations': 20,
+                'max_iterations': 8,  # Reduced from 20 to save tokens
                 'resume': resume,
             },
             'agent_kwargs': {

@@ -10,7 +10,7 @@ This module provides comprehensive web search capabilities including:
 from .base_search import SearchResult, ImageSearchResult
 from .quota_manager import QuotaManager
 from .search_engine_pool import SearchEnginePool, SearchStrategy, create_default_pool
-from .search_engine_serpapi import SerpAPISearch
+from .search_engine_tavily import TavilySearch
 from .search_engine_requests import (
     SerperSearch,
     BingSearch,
@@ -36,7 +36,7 @@ __all__ = [
     "create_default_pool",
     
     # Search engines
-    "SerpAPISearch",
+    "TavilySearch",
     "SerperSearch",
     "BingSearch",
     "DuckDuckGoSearch",

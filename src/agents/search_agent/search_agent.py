@@ -35,7 +35,7 @@ class DeepSearchAgent(BaseAgent):
                     self.search_pool = create_default_pool()
                     super().__init__(
                         name="Multi-Engine Web Search",
-                        description="Search the web using multiple search engines with intelligent fallback (SerpAPI, DuckDuckGo, etc.)",
+                        description="Search the web using multiple search engines with intelligent fallback (Tavily, DuckDuckGo)",
                         parameters=[
                             {"name": "query", "type": "string", "description": "Search query"}
                         ]
@@ -47,7 +47,7 @@ class DeepSearchAgent(BaseAgent):
                     results = await self.search_pool.search(
                         query=query,
                         max_results=10,
-                        strategy="auto"  # Automatic fallback: SerpAPI -> Tavily -> DuckDuckGo
+                        strategy="auto"  # Automatic fallback: Tavily -> DuckDuckGo
                     )
                     return results if results else []
             
@@ -318,7 +318,7 @@ class DeepSearchAgent(BaseAgent):
     async def async_run(
         self, 
         input_data: dict, 
-        max_iterations: int = 30,
+        max_iterations: int = 10,  # Reduced from 30 to save tokens
         stop_words: list[str] = [],
         echo=False,
         resume: bool = True,

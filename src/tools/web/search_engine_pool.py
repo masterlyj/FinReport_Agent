@@ -33,19 +33,19 @@ class SearchEnginePool:
     支持多种查询策略和自动降级
     """
     
-    # 预定义策略
+    # 预定义策略 (仅使用Tavily，不再使用多引擎并发)
     STRATEGIES = {
         "premium": SearchStrategy(
             name="premium",
-            engines=["serpapi", "duckduckgo"],
-            parallel=True,
-            description="SerpAPI(付费高质量) + DuckDuckGo(免费备用) 并发查询"
+            engines=["tavily"],
+            parallel=False,
+            description="Tavily AI搜索 (主搜索引擎)"
         ),
         "fallback": SearchStrategy(
             name="fallback",
-            engines=["tavily", "duckduckgo"],
-            parallel=True,
-            description="Tavily(付费AI搜索) + DuckDuckGo(免费) 并发查询"
+            engines=["duckduckgo"],
+            parallel=False,
+            description="DuckDuckGo免费搜索 (备用)"
         ),
         "free_only": SearchStrategy(
             name="free_only",
@@ -55,9 +55,9 @@ class SearchEnginePool:
         ),
         "best_effort": SearchStrategy(
             name="best_effort",
-            engines=["serpapi", "tavily", "duckduckgo"],
-            parallel=True,
-            description="所有可用引擎并发，尽力而为"
+            engines=["tavily", "duckduckgo"],
+            parallel=False,  # 顺序执行，先Tavily后DuckDuckGo
+            description="Tavily优先，DuckDuckGo备用"
         )
     }
     
@@ -68,9 +68,8 @@ class SearchEnginePool:
         Args:
             engines: Dict[str, Tool] - 引擎实例字典
                 例如: {
-                    "serpapi": SerpAPISearch(),
-                    "duckduckgo": DuckDuckGoSearch(),
-                    "tavily": TavilySearch()
+                    "tavily": TavilySearch(),
+                    "duckduckgo": DuckDuckGoSearch()
                 }
             quota_manager: 配额管理器实例，None则自动创建
         """
@@ -152,20 +151,16 @@ class SearchEnginePool:
         自动选择最佳策略
         
         优先级:
-        1. premium (SerpAPI有额度)
-        2. fallback (Tavily有额度)
+        1. premium (Tavily有额度)
+        2. fallback (DuckDuckGo备用)
         3. free_only (最后备选)
         """
-        # 优先使用premium（SerpAPI质量最高）
-        if self.quota_manager.check_quota("serpapi") and "serpapi" in self.engines:
+        # 优先使用Tavily
+        if self.quota_manager.check_quota("tavily") and "tavily" in self.engines:
             return "premium"
         
-        # SerpAPI配额用尽，尝试Tavily
-        if self.quota_manager.check_quota("tavily") and "tavily" in self.engines:
-            return "fallback"
-        
-        # 所有付费配额用尽，使用免费
-        logger.info("All paid quotas exhausted, using free_only strategy")
+        # Tavily配额用尽，使用免费DuckDuckGo
+        logger.info("Tavily quota exhausted, using free_only strategy")
         return "free_only"
     
     def _filter_available_engines(self, engine_names: List[str]) -> List[str]:
@@ -348,19 +343,19 @@ class SearchEnginePool:
 # 便捷函数：创建默认搜索引擎池
 def create_default_pool():
     """
-    创建默认的搜索引擎池（包含所有可用引擎）
+    创建默认的搜索引擎池
+    
+    当前配置: 仅使用Tavily作为主引擎，DuckDuckGo作为备用
     
     Returns:
         SearchEnginePool实例
     """
-    from .search_engine_serpapi import SerpAPISearch
+    from .search_engine_tavily import TavilySearch
     from .search_engine_requests import DuckDuckGoSearch
-    # from .search_engine_tavily import TavilySearch  # 如果实现了
     
     engines = {
-        "serpapi": SerpAPISearch(),
+        "tavily": TavilySearch(),
         "duckduckgo": DuckDuckGoSearch(),
-        # "tavily": TavilySearch(),
     }
     
     return SearchEnginePool(engines)

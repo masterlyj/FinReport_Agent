@@ -410,16 +410,19 @@ class BaseAgent:
             self.memory.add_log(self.id, None, kwargs, [], error=True, note=f"No available tools for tool_name: {tool_name}")
             return []
 
+        # Import the shared utility for running async code safely from sync context
+        from src.utils import run_async_safely
+
         try:
             if issubclass(type(target_tool), BaseAgent):
                 if 'task' not in kwargs:
                     kwargs['task'] = self.current_task_data['task']
-                response = asyncio.run(target_tool.async_run(input_data=kwargs))
+                response = run_async_safely(target_tool.async_run(input_data=kwargs))
                 response = response['final_result']
                 self.memory.add_log(target_tool.id, target_tool.type, kwargs, response, error=False, note=f"Tool {target_tool.name} executed successfully")
                 return response
             elif issubclass(type(target_tool), Tool):
-                response = asyncio.run(target_tool.api_function(**kwargs))
+                response = run_async_safely(target_tool.api_function(**kwargs))
                 sources = [item.source for item in response]
                 data_list = [item.data for item in response]
                 sources = "\n".join(sources)
@@ -550,6 +553,7 @@ class BaseAgent:
             'input_data': input_data,
             'stop_words': stop_words,
             'return_dict': return_dict,
+            'finished': True,  # Mark agent as finished for resume logic
         }
         current_state.update(self._get_persist_extra_state())
         await self.save(
