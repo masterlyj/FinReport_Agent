@@ -3,20 +3,18 @@ Pydantic 配置模型
 提供类型安全的配置验证和自动补全
 """
 from typing import List, Optional, Dict, Any, Literal
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 import os
 
 
 class LLMGenerationParams(BaseModel):
     """LLM 生成参数配置"""
+    model_config = ConfigDict(extra="allow")  # 允许额外字段
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="生成温度")
-    max_tokens: int = Field(default=32768, gt=0, description="最大生成 token 数")
+    max_tokens: int = Field(default=8192, gt=0, description="最大生成 token 数")
     top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="核采样参数")
     frequency_penalty: Optional[float] = Field(default=None, ge=-2.0, le=2.0, description="频率惩罚")
     presence_penalty: Optional[float] = Field(default=None, ge=-2.0, le=2.0, description="存在惩罚")
-
-    class Config:
-        extra = "allow"  # 允许额外字段
 
 
 class LLMConfig(BaseModel):
@@ -115,8 +113,7 @@ class AppConfig(BaseModel):
     save_note: Optional[str] = Field(default=None, description="保存备注")
     working_dir: Optional[str] = Field(default=None, description="工作目录（自动生成）")
 
-    class Config:
-        extra = "allow"  # 允许额外字段以保持向后兼容
+    model_config = ConfigDict(extra="allow")  # 允许额外字段以保持向后兼容
 
     @model_validator(mode='after')
     def validate_config(self):

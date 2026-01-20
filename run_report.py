@@ -64,13 +64,17 @@ async def run_report(resume: bool = True, max_concurrent: int = None):
     # Generate collect tasks if not already generated (or if we want fresh tasks)
     if not memory.generated_collect_tasks:
         logger.info("Generating collect tasks using LLM...")
-        generated_collect_tasks = await memory.generate_collect_tasks(
-            query=research_query,
-            use_llm_name=use_llm_name,
-            max_num=3,
-            existing_tasks=collect_tasks  # Pass existing tasks to avoid duplication
-        )
-        logger.info(f"Generated {len(generated_collect_tasks)} collect tasks")
+        try:
+            generated_collect_tasks = await memory.generate_collect_tasks(
+                query=research_query,
+                use_llm_name=use_llm_name,
+                max_num=3,
+                existing_tasks=collect_tasks  # Pass existing tasks to avoid duplication
+            )
+            logger.info(f"Generated {len(generated_collect_tasks)} collect tasks")
+        except Exception as e:
+            logger.error(f"Failed to generate collect tasks: {e}")
+            generated_collect_tasks = []
     else:
         generated_collect_tasks = memory.generated_collect_tasks
         logger.info(f"Using {len(generated_collect_tasks)} previously generated collect tasks")
@@ -78,13 +82,17 @@ async def run_report(resume: bool = True, max_concurrent: int = None):
     # Generate analysis tasks if not already generated
     if not memory.generated_analysis_tasks:
         logger.info("Generating analysis tasks using LLM...")
-        generated_analysis_tasks = await memory.generate_analyze_tasks(
-            query=research_query,
-            use_llm_name=use_llm_name,
-            max_num=3,
-            existing_tasks=analysis_tasks  # Pass existing tasks to avoid duplication
-        )
-        logger.info(f"Generated {len(generated_analysis_tasks)} analysis tasks")
+        try:
+            generated_analysis_tasks = await memory.generate_analyze_tasks(
+                query=research_query,
+                use_llm_name=use_llm_name,
+                max_num=3,
+                existing_tasks=analysis_tasks  # Pass existing tasks to avoid duplication
+            )
+            logger.info(f"Generated {len(generated_analysis_tasks)} analysis tasks")
+        except Exception as e:
+            logger.error(f"Failed to generate analysis tasks: {e}")
+            generated_analysis_tasks = []
     else:
         generated_analysis_tasks = memory.generated_analysis_tasks
         logger.info(f"Using {len(generated_analysis_tasks)} previously generated analysis tasks")

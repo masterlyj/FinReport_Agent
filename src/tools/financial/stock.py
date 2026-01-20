@@ -7,31 +7,31 @@ from bs4 import BeautifulSoup
 
 from ..base import Tool, ToolResult
 
-# TODO: Add more granular Xueqiu endpoints (differentiate SH/SZ ahead of time).
+# TODO: 后续可针对雪球不同市场（先区分上交所/深交所）使用更细致接口。
 class StockBasicInfo(Tool):
     def __init__(self):
         super().__init__(
-            name="Stock profile",
-            description="Return the basic corporate profile for a given ticker. Confirm the exchange-specific ticker before calling.",
+            name="股票公司简介",
+            description="根据指定股票代码返回公司的基础简介信息。调用前请确认已判定交易所与市场。",
             parameters=[
-                {"name": "stock_code", "type": "str", "description": "Ticker, e.g., 000001", "required": True},
-                {"name": "market", "type": "str", "description": "Market flag: HK for Hong Kong, A for A-share", "required": True},
+                {"name": "stock_code", "type": "str", "description": "股票代码，如 000001", "required": True},
+                {"name": "market", "type": "str", "description": "市场标识: A 为 A 股，HK 为港股", "required": True},
             ],
         )
 
     def prepare_params(self, task) -> dict:
         """
-        Build parameters for the tool call from the routing task.
+        根据任务对象构建工具调用参数。
         """
         if task.stock_code is None:
-            # This should already be validated upstream
-            assert False, "Stock code cannot be empty"
+            # 上游应该已完成验证
+            assert False, "股票代码不可为空"
         else:
             return {"stock_code": task.stock_code, "market": task.market}
 
     async def api_function(self, stock_code: str, market: str = "HK"):
         """
-        Call the upstream API and return the corresponding dataset.
+        调用上游接口，返回公司简介数据。
         """
         try:
             if market == "A":
@@ -39,16 +39,16 @@ class StockBasicInfo(Tool):
             elif market == "HK":
                 data = ak.stock_hk_company_profile_em(symbol=stock_code)
             else:
-                raise ValueError(f"Unsupported market flag: {market}. Use 'HK' or 'A'.")
+                raise ValueError(f"不支持的市场标识: {market}，请使用 'HK' 或 'A'。")
         except Exception as e:
-            print("Failed to fetch basic stock info", e)
+            print("获取股票基本信息失败", e)
             data = None
         return [
             ToolResult(
                 name = f"{self.name}: {stock_code}",
-                description = f"Corporate profile for {stock_code}.",
+                description = f"{stock_code} 的公司简介信息。",
                 data = data,
-                source="Xueqiu: Stock basic information. https://xueqiu.com/S"
+                source="雪球: 股票公司基本信息 https://xueqiu.com/S"
             )
         ]
 
@@ -56,33 +56,33 @@ class StockBasicInfo(Tool):
 class ShareHoldingStructure(Tool):
     def __init__(self):
         super().__init__(
-            name="Shareholding structure",
-            description="Return shareholder composition, including holder names, share counts, percentages, and equity type.",
+            name="股权结构",
+            description="返回股票主要股东名称、持股数量、占比、股权类型等信息。",
             parameters=[
-                {"name": "stock_code", "type": "str", "description": "Ticker, e.g., 000001", "required": True},
-                {"name": "market", "type": "str", "description": "Market flag: HK for Hong Kong, A for A-share", "required": True},
+                {"name": "stock_code", "type": "str", "description": "股票代码，如 000001", "required": True},
+                {"name": "market", "type": "str", "description": "市场标识: A 为 A 股，HK 为港股", "required": True},
             ],
         )
 
     def prepare_params(self, task) -> dict:
         """
-        Build parameters for the tool call from the routing task.
+        根据任务对象构建工具调用参数。
         """
         if task.stock_code is None:
-            # This should already be validated upstream
-            assert False, "Stock code cannot be empty"
+            # 上游应该已完成验证
+            assert False, "股票代码不可为空"
         else:
             return {"stock_code": task.stock_code, "market": task.market}
 
     async def api_function(self, stock_code: str, market: str = "HK"):
         """
-        Fetch the shareholder list for the given market and ticker.
+        获取指定股票的股东结构信息（区分市场）。
         """
         try:
             if market == "A":
                 data = ak.stock_main_stock_holder(stock=stock_code)
             elif market == "HK":
-                # Scrape data from Eastmoney
+                # 从东方财富网抓取数据
                 headers = {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
                 }
@@ -104,33 +104,33 @@ class ShareHoldingStructure(Tool):
                         'IS_ZJ': 'is_direct'
                     })
                     data = data.loc[:, ['holder_name', 'shares', 'ownership_pct', 'ownership_type', 'is_direct']]
-                    data['is_direct'] = data['is_direct'].map({'1': 'Yes', '0': 'No'})
+                    data['is_direct'] = data['is_direct'].map({'1': '是', '0': '否'})
                     data.sort_values(by='ownership_pct', ascending=False, inplace=True)
                     data.reset_index(drop=True, inplace=True)
                 except Exception as e:
-                    print("Failed to parse Hong Kong shareholding structure", e)
+                    print("解析港股股东结构失败", e)
                     data = None
             else:
-                raise ValueError(f"Unsupported market flag: {market}. Use 'HK' or 'A'.")
+                raise ValueError(f"不支持的市场标识: {market}，请使用 'HK' 或 'A'。")
         except Exception as e:
-            print("Failed to fetch shareholding structure", e)
+            print("获取股权结构失败", e)
             data = None
         return [
             ToolResult(
-                name=f"{self.name} (ticker: {stock_code})",
+                name=f"{self.name} (股票代码: {stock_code})",
                 description=self.description,
                 data=data,
-                source="Sina Finance: Shareholder structure. https://vip.stock.finance.sina.com.cn/corp/go.php/vCI_StockHolder/stockid/600004.phtml"
+                source="新浪财经: 股东结构 https://vip.stock.finance.sina.com.cn/corp/go.php/vCI_StockHolder/stockid/600004.phtml"
             )
         ]
 
 class StockBaseInfo(Tool):
     def __init__(self):
         super().__init__(
-            name="Equity valuation metrics",
-            description="Return valuation and profitability metrics such as PE, PB, ROE, and gross margin.",
+            name="股票估值指标",
+            description="返回市盈率、市净率、净资产收益率（ROE）、毛利率等基本估值与盈利能力指标。",
             parameters=[
-                {"name": "stock_code", "type": "str", "description": "Ticker, e.g., 000001", "required": True},
+                {"name": "stock_code", "type": "str", "description": "股票代码，如 000001", "required": True},
             ],
         )
 
@@ -139,19 +139,19 @@ class StockBaseInfo(Tool):
 
     async def api_function(self, stock_code: str, market: str = "HK"):
         """
-        Fetch fundamental metrics for the requested ticker.
+        获取指定股票的估值及盈利能力核心指标。
         """
         try:
             data = ef.stock.get_base_info(stock_code)
         except Exception as e:
-            print("Failed to fetch stock valuation info", e)
+            print("获取股票估值指标失败", e)
             data = None
         return [
             ToolResult(
-                name=f"{self.name} (ticker: {stock_code})",
+                name=f"{self.name} (股票代码: {stock_code})",
                 description=self.description,
                 data=data,
-                source="Exchange filings: Equity valuation metrics."
+                source="交易所公告: 股票估值与盈利指标"
             )
         ]
 
@@ -159,10 +159,10 @@ class StockBaseInfo(Tool):
 class StockPrice(Tool):
     def __init__(self):
         super().__init__(
-            name="Stock candlestick data",
-            description="Daily OHLCV data including turnover and rate-of-change metrics.",
+            name="股票K线行情数据",
+            description="返回股票每日K线行情，包括开收盘价、最高价、最低价、成交量、换手率等指标。",
             parameters=[
-                {"name": "stock_code", "type": "str", "description": "Ticker/Stock Code (support A-share and HK-share), e.g., 000001", "required": True},
+                {"name": "stock_code", "type": "str", "description": "股票代码（支持A股与港股），如 000001", "required": True},
             ],
         )
 
@@ -171,18 +171,18 @@ class StockPrice(Tool):
 
     async def api_function(self, stock_code: str, market: str = "HK"):
         """
-        Fetch historical quote data for the requested ticker.
+        获取指定股票的历史行情数据（日线K线）。
         """
         try:
             data = ef.stock.get_quote_history(stock_code)
         except Exception as e:
-            print("Failed to fetch stock price history", e)
+            print("获取股票历史行情失败", e)
             data = None
         return [
             ToolResult(
-                name=f"{self.name} (ticker: {stock_code})",
+                name=f"{self.name} (股票代码: {stock_code})",
                 description=self.description,
                 data=data,
-                source="Exchange trading data: OHLCV history."
+                source="交易所行情: 股票历史K线数据"
             )
         ]

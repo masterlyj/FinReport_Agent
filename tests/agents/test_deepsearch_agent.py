@@ -28,7 +28,8 @@ if __name__ == "__main__":
     log_dir = os.path.join(config.working_dir, 'logs')
     logger = setup_logger(log_dir=log_dir, log_level=logging.INFO)
     agent = DeepSearchAgent(config=config, use_llm_name=os.getenv('DS_MODEL_NAME'), memory=memory)
-    result = asyncio.run(agent.async_run(input_data={'task': '商汤科技', 'query': 'SenseTime government contracts enterprise customers financial services healthcare clients 2024'}, echo=True, max_iterations=5))
+    # Removing hardcoded 2024 to test dynamic year handling
+    result = asyncio.run(agent.async_run(input_data={'task': '商汤科技', 'query': 'SenseTime government contracts enterprise customers financial services healthcare clients recent years'}, echo=True, max_iterations=5))
     # print(result)
     print(result['final_result'])
     print(len(memory.data))

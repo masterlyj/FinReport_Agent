@@ -19,7 +19,7 @@ get_logger().set_agent_context('runner', 'main')
 
 if __name__ == "__main__":
     config = Config(
-        config_file_path='tests/my_config.yaml',
+        config_file_path='my_config.yaml',
     )
 
     memory = Memory(config=config)
@@ -29,5 +29,5 @@ if __name__ == "__main__":
 
 
     agent = DataCollector(config=config, use_llm_name=os.getenv('DS_MODEL_NAME'), memory=memory)
-    result = asyncio.run(agent.async_run(input_data={'task': '浪潮信息（000977）的股价信息'}, echo=True, max_iterations=5))
+    result = asyncio.run(agent.async_run(input_data={'task': '浪潮信息（000977）的财务和股价信息'}, echo=True, max_iterations=5, resume=False))
     print(result['final_result'])

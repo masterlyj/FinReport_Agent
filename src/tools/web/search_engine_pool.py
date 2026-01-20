@@ -33,31 +33,31 @@ class SearchEnginePool:
     支持多种查询策略和自动降级
     """
     
-    # 预定义策略 (仅使用Tavily，不再使用多引擎并发)
+    # 预定义策略
     STRATEGIES = {
         "premium": SearchStrategy(
             name="premium",
-            engines=["tavily"],
-            parallel=False,
-            description="Tavily AI搜索 (主搜索引擎)"
+            engines=["tavily", "bing_playwright"],
+            parallel=True,
+            description="Tavily AI搜索 + Bing (Playwright) 并发搜索"
         ),
         "fallback": SearchStrategy(
             name="fallback",
-            engines=["duckduckgo"],
-            parallel=False,
-            description="DuckDuckGo免费搜索 (备用)"
+            engines=["bing_requests", "sogou"],
+            parallel=True,
+            description="Bing (Requests) + Sogou 并发搜索 (备用)"
         ),
         "free_only": SearchStrategy(
             name="free_only",
-            engines=["duckduckgo"],
-            parallel=False,
-            description="仅使用DuckDuckGo免费搜索"
+            engines=["bing_requests", "sogou", "duckduckgo"],
+            parallel=True,
+            description="完全免费搜索引擎并发"
         ),
         "best_effort": SearchStrategy(
             name="best_effort",
-            engines=["tavily", "duckduckgo"],
-            parallel=False,  # 顺序执行，先Tavily后DuckDuckGo
-            description="Tavily优先，DuckDuckGo备用"
+            engines=["tavily", "bing_playwright", "sogou"],
+            parallel=True, 
+            description="全引擎全力搜索"
         )
     }
     
@@ -151,16 +151,19 @@ class SearchEnginePool:
         自动选择最佳策略
         
         优先级:
-        1. premium (Tavily有额度)
+        1. premium (Tavily有额度且API Key已配置)
         2. fallback (DuckDuckGo备用)
         3. free_only (最后备选)
         """
-        # 优先使用Tavily
-        if self.quota_manager.check_quota("tavily") and "tavily" in self.engines:
-            return "premium"
+        # 优先使用Tavily，需同时满足有额度和配置了API Key
+        if "tavily" in self.engines:
+            tavily_engine = self.engines["tavily"]
+            has_api_key = hasattr(tavily_engine, 'api_key') and bool(tavily_engine.api_key)
+            if self.quota_manager.check_quota("tavily") and has_api_key:
+                return "premium"
         
-        # Tavily配额用尽，使用免费DuckDuckGo
-        logger.info("Tavily quota exhausted, using free_only strategy")
+        # Tavily配额用尽或未配置
+        logger.info("Tavily unavailable (quota exhausted or no API key), falling back to 'free_only'")
         return "free_only"
     
     def _filter_available_engines(self, engine_names: List[str]) -> List[str]:
@@ -278,16 +281,16 @@ class SearchEnginePool:
                 self.quota_manager.use_quota(engine_name, count=1)
                 remaining = self.quota_manager.get_remaining(engine_name)
                 logger.info(
-                    f"✓ {engine_name}: {len(results)} results, "
+                    f"[v] {engine_name}: {len(results)} results, "
                     f"quota remaining: {remaining if remaining != -1 else 'Unlimited'}"
                 )
             else:
-                logger.info(f"✗ {engine_name}: No results")
+                logger.info(f"[x] {engine_name}: No results")
             
             return results or []
             
         except Exception as e:
-            logger.error(f"✗ {engine_name} search failed: {type(e).__name__}: {e}")
+            logger.error(f"[x] {engine_name} search failed: {type(e).__name__}: {e}")
             return []
     
     def _merge_and_deduplicate(
@@ -341,21 +344,27 @@ class SearchEnginePool:
 
 
 # 便捷函数：创建默认搜索引擎池
-def create_default_pool():
+def create_default_pool() -> SearchEnginePool:
     """
     创建默认的搜索引擎池
-    
-    当前配置: 仅使用Tavily作为主引擎，DuckDuckGo作为备用
     
     Returns:
         SearchEnginePool实例
     """
-    from .search_engine_tavily import TavilySearch
-    from .search_engine_requests import DuckDuckGoSearch
+    from .search_engines import (
+        TavilySearch, 
+        BingSearch, 
+        PlaywrightSearch, 
+        SogouSearch, 
+        DuckDuckGoSearch
+    )
     
     engines = {
         "tavily": TavilySearch(),
-        "duckduckgo": DuckDuckGoSearch(),
+        "bing_requests": BingSearch(),
+        "bing_playwright": PlaywrightSearch(),
+        "sogou": SogouSearch(),
+        "duckduckgo": DuckDuckGoSearch()
     }
     
     return SearchEnginePool(engines)

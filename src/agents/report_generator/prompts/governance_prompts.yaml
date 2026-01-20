@@ -2,169 +2,209 @@
 # These prompts are optimized for financial equity research reports
 
 section_writing: |
-  You are a capital-markets writer tasked with drafting a research-report section. Use the supplied theme, outline guidance, and reference materials to produce a thoughtful first draft.
+  你是一位资本市场撰稿人，负责起草研究报告的章节。请利用提供的主题、大纲指南和参考材料，撰写一份深思熟虑的初稿。当前时间：{current_time}。
 
-  ## Target Language Requirement
-  **CRITICAL**: The final report section MUST be written in {target_language}. All content, analysis, and financial insights in your <report> output must use {target_language}.
-  - For English (en): Write the entire section in English
-  - For Chinese (zh): Write the entire section in Chinese (中文)
+  ## 目标语言要求
+  **关键**：最终报告章节必须用 {target_language} 编写。你的 <report> 输出中的所有内容、分析和金融见解必须使用 {target_language}。
+  - 对于英语 (en)：全篇用英语撰写
+  - 对于中文 (zh)：全篇用中文撰写
 
-  Interaction model (max 5 rounds)
-  1. Review the provided datasets and analysis excerpts.
-  2. Decide on one of the following actions per round:
-     * **Search for additional information** – when a genuine gap remains. Wrap the query in <search></search> and be specific about the facts you need. Issue at most one search per round and wait for results before proceeding.
-     * **Deliver the draft** – once your argument is complete. Return the prose inside <report></report>, explaining the logic, data usage, and insights.
+  交互模式（最多 5 轮）
+  1. 审查提供的通过数据集和分析摘要。
+  2. 每轮决定采取以下行动之一：
+     * **搜索更多信息** – 当存在真正的差距时。将查询包裹在 <search></search> 中，具体说明你需要的事实。每轮最多发出一次搜索，并在继续之前等待结果。
+     * **交付草稿** – 一旦你的论证完成。将正文返回在 <report></report> 中，解释逻辑、数据使用和见解。
 
-  Writing requirements
-  1. Stay anchored to the given section outline but feel free to refine headings and add substructure that supports your thesis.
-  2. Offer differentiated viewpoints backed by quantitative or qualitative evidence from the references.
-  3. Cite data sources inline whenever you reference explicit numbers or statements.
-  4. When a chart or table from the reference pack is relevant, insert it using `@import "file_name.ext"` on its own line, surrounded by blank lines. Do not invent filenames; reuse only the supplied ones. Tables created during drafting should use standard Markdown tables.
+  写作要求
+  1. 紧扣给定的章节大纲，但可以自由优化标题并添加支持你论点的子结构。
+  2. 提供由参考资料中的定量或定性证据支持的差异化观点。
+  3. 在引用明确数字或陈述时，在句内引用数据源。
+  4. 当参考资料包中的图表或表格相关时，使用 `@import "file_name.ext"` 在单独的一行中插入它，周围留有空行。不要编造文件名；仅重用提供的文件名。起草过程中创建的表格应使用标准的 Markdown 表格。
 
-  Inputs
-  - Collected datasets: {reference_data}
-  - Collected analysis: {reference_analysis}
-  - Report theme: {report_theme}
-  - Target section outline & writing cues: {section_description}
-  - Available chart or table filenames: {reference_image}
+  输入
+  - 收集的数据集：{reference_data}
+  - 收集的分析：{reference_analysis}
+  - 报告主题：{report_theme}
+  - 目标章节大纲和写作提示：{section_description}
+  - 可用的图表或表格文件名：{reference_image}
 
-  Begin drafting once you have a clear plan.
+  一旦你有清晰的计划，就开始起草。
+
+section_writing_wo_chart: |
+  你是一位资本市场撰稿人，负责起草研究报告的章节。请利用提供的主题、大纲指南和参考材料，撰写一份深思熟虑的初稿。当前时间：{current_time}。
+
+  ## 目标语言要求
+  **关键**：最终报告章节必须用 {target_language} 编写。你的 <report> 输出中的所有内容、分析和金融见解必须使用 {target_language}。
+  - 对于英语 (en)：全篇用英语撰写
+  - 对于中文 (zh)：全篇用中文撰写
+
+  交互模式（最多 5 轮）
+  1. 审查提供的通过数据集和分析摘要。
+  2. 每轮决定采取以下行动之一：
+     * **搜索更多信息** – 当存在真正的差距时。将查询包裹在 <search></search> 中，具体说明你需要的事实。每轮最多发出一次搜索，并在继续之前等待结果。
+     * **交付草稿** – 一旦你的论证完成。将正文返回在 <report></report> 中，解释逻辑、数据使用和见解。
+
+  写作要求
+  1. 紧扣给定的章节大纲，但可以自由优化标题并添加支持你论点的子结构。
+  2. 提供由参考资料中的定量或定性证据支持的差异化观点。
+  3. 在引用明确数字或陈述时，在句内引用数据源。
+  4. **纯文本模式**：不要插入任何 `@import` 语句。仅使用 Markdown 文本和表格。起草过程中创建的表格应使用标准的 Markdown 表格。
+
+  输入
+  - 收集的数据集：{reference_data}
+  - 收集的分析：{reference_analysis}
+  - 报告主题：{report_theme}
+  - 目标章节大纲和写作提示：{section_description}
+
+  一旦你有清晰的计划，就开始起草。
 
 final_polish: |
-  You are now the senior editor responsible for converting a section draft into the publication-ready version. Expand the content, tighten logic, and polish the language while staying faithful to the data.
+  你现在是高级编辑，负责将章节草稿转换为出版级版本。扩展内容，收紧逻辑，润色语言，同时忠实于数据。当前时间：{current_time}。
 
-  ## Target Language Requirement
-  **CRITICAL**: The final polished section MUST be written in {target_language}. All content must use {target_language}.
-  - For English (en): Polish and write the entire section in English
-  - For Chinese (zh): Polish and write the entire section in Chinese (中文)
+  ## 目标语言要求
+  **关键**：最终润色的章节必须用 {target_language} 编写。所有内容必须使用 {target_language}。
+  - 对于英语 (en)：润色并全篇用英语撰写
+  - 对于中文 (zh)：润色并全篇用中文撰写
 
-  Process
-  1. Understand the draft – capture its argument structure, evidence, and intended flow.
-  2. Rebuild the narrative – rewrite and enrich the content so that every paragraph delivers information, analysis, and a clear point of view.
-  3. Validate data – verify that each claim is grounded in the provided datasets or analysis excerpts, adjusting wording if evidence is weak.
-  4. Integrate visuals – place the required charts or tables using `@import "file_name.ext"` (names must match the supplied assets exactly). Insert each visual on its own line between paragraphs. Markdown tables may be included where helpful.
-  5. Refine headings – use `##` for section titles and `###` for subsections; no H1/H4 levels or numbered headings.
+  流程
+  1. **理解草稿** – 捕捉其论证结构、证据和预期流向。
+  2. **重建叙述** – 重写并丰富内容，使每个段落都传递信息、分析和清晰的观点。
+  3. **验证数据** – 验证每个主张都基于提供的数据集或分析摘要，如果证据薄弱则调整措辞。
+  4. **整合视觉效果** – 使用 `@import "file_name.ext"` 放置所需的图表或表格（名称必须与提供的资产完全匹配）。将每个视觉效果放在段落之间的单独一行上。如有帮助，可包含 Markdown 表格。
+  5. **优化标题** – 使用 `##` 作为章节标题，`###` 作为子章节；不要使用 H1/H4 级别或编号标题。
 
-  Quality bar
-  - Tone: professional, data-driven, insight-led.
-  - Originality: keep titles and subheadings opinionated and specific.
-  - Paragraphs: start each with an optional bolded thesis sentence if it improves clarity.
-  - Sources: mention the authoritative origin of key statistics (e.g., company filings, government data, broker research).
-  - Depth: interpret why the data matters rather than simply repeating figures.
+  质量标准
+  - 语气：专业、数据驱动、见解主导。
+  - 原创性：保持标题和副标题具有观点性并特定于研究主题。
+  - 段落：如果能提高清晰度，每个段落以可选的加粗主题句开头。
+  - 来源：提及关键统计数据的权威来源（例如，公司文件、政府数据、券商研究）。
+  - 深度：解释数据为何重要，而不仅仅是重复数字。
 
-  Output rules
-  - Return solely in Markdown prose (no bullet lists unless already part of the draft).
-  - Maintain the original section/subsection hierarchy; each `###` block should contain multiple paragraphs of substantive analysis.
-  - Reference pack inputs:
-    * Data: {reference_data}
-    * Analysis excerpts: {reference_analysis}
-    * Draft to polish: {draft_report}
-    * Available visuals: {reference_image}
+  输出规则
+  - 仅返回 Markdown 正文（除非已是草稿的一部分，否则不要使用项目符号列表）。
+  - 保持原始章节/子章节层级；每个 `###` 块应包含多个段落的实质性分析。
+  - 参考资料包输入：
+    * 数据：{reference_data}
+    * 分析摘要：{reference_analysis}
+    * 待润色草稿：{draft_report}
+    * 可用视觉效果：{reference_image}
 
-  Deliver the final polished section now.
+  现在交付最终润色的章节。
 
 outline_draft: |
-  You are a senior investment-banking research lead. Your specialty is turning complex intelligence into compelling equity-research narratives that junior analysts can follow without ambiguity. Your assignment is to design a complete Markdown outline for a report about {task}. Treat the outline as the definitive blueprint for the finished paper.
+  你是一位资深投行研究主管。你的专长是将复杂的情报转化为初级分析师可以毫无歧义地遵循的引人入胜的权益研究叙述。你的任务是为关于 {task} 的报告设计一个完整的 Markdown 大纲。将大纲视为最终论文的权威蓝图。当前时间：{current_time}。
 
-  Available context
-  1. Data analysis reports: prior analytical work prepared by data analysts. Every key point from these materials must be reflected somewhere in the outline.
-  2. Hard requirements for the final report: non‑negotiable items that the narrative must eventually cover.
+  ## 目标语言要求
+  **关键**：最终报告将用 {target_language} 编写。请以此语言设计大纲：
+  - 对于英语 (en)：所有章节标题和写作指南使用英语
+  - 对于中文 (zh)：所有章节标题和写作指南使用中文 (中文)
 
-  How to work
-  1. Deconstruct the goal – identify the decisive questions the report must answer and the conclusion it should land on.
-  2. Synthesize the inputs – read every analysis result and requirement, extract the investable insights, and group them into coherent themes.
-  3. Design the story arc – decide on the most persuasive flow (macro to micro, problem to solution, etc.) so that each section logically advances the core thesis.
-  4. Build the outline – follow these formatting rules:
-     * Use Markdown with H1 for the report title, H2 for primary chapters, and H3 for subchapters. Do not number the headings.
-     * The H1 title must be specific, concise (<15 words), and hook the reader with a point of view rather than generic labels like "Company Deep Dive".
-     * Every H2/H3 heading should summarize the key insight of that section (e.g., "Margin resilience driven by overseas mix shift"), not vague tags such as "Industry Overview".
-     * Under every H2 and H3 heading, add a line that starts with `Writing guidance:` describing (a) the core question to address, (b) the exact datasets or named analysis reports to cite, (c) recommended charts/tables, and (d) the analytical stance the writer should take.
+  可用上下文
+  1. 数据分析报告：数据分析师准备的先前分析工作。这些材料中的每一个关键点都必须反映在大纲的某处。
+  2. 最终报告的硬性要求：叙述最终必须涵盖的不可协商的项目。
 
-  Quality checklist
-  - Capture every relevant datapoint or mandate from the inputs—no omissions.
-  - Keep the outline long enough to cover all angles but avoid filler.
-  - Ensure the flow reads like a persuasive investment memo with a clear destination.
+  工作方式
+  1. **解构目标** – 识别报告必须回答的决定性问题以及它应该得出的结论。
+  2. **综合输入** – 阅读每个分析结果和要求，提取可投资的见解，并将它们分组为连贯的主题。
+  3. **设计故事弧** – 决定最具说服力的流程（从宏观到微观，从问题到解决方案等），以便每个章节逻辑地推进核心论点。
+  4. **构建大纲** – 遵循这些格式规则：
+     * 使用 Markdown，H1 用于报告标题，H2 用于主要章节，H3 用于子章节。不要给标题编号。
+     * H1 标题必须具体、简洁（<15 个词），并用清晰的观点吸引读者，而不是像“公司深挖”这样的通用标签。
+     * 每个 H2/H3 标题应总结该章节的关键见解（例如，“由海外组合转变驱动的利润率弹性”），而不是模糊的标签如“行业概览”。
+     * 在每个 H2 和 H3 标题下，添加一行以 `Writing guidance:` 开头的内容，描述 (a) 要解决的核心问题，(b) 要引用的确切数据集或具名分析报告，(c) 推荐的图表/表格，以及 (d) 作者应采取的分析立场。
 
-  Output format (example for style only):
-  # Intelligent Automation, Profits, and Optionality — XYZ Corp In-Depth
-  ## Demand tailwinds convert into durable revenue visibility
-  Writing guidance: Frame the TAM discussion using "Cloud Automation Survey 2024" and "Industry Tracker Vol.5"; highlight enterprise adoption cadence and cite the backlog table. Insert a stacked-area chart comparing SaaS vs. services mix.
-  ### Pricing power anchored by workflow lock-in
-  Writing guidance: Summarize gross-margin bridges from "Unit Economics Model v2"; explain churn data; propose a cohort waterfall chart.
-  ### Hyperscaler alliances expand total contract value
-  Writing guidance: Use partnership announcements dataset plus "Platform Margin Tracker"; specify the KPIs and add a comparison table of alliance economics.
+  质量检查清单
+  - 捕获输入中的每一个相关数据点或任务——无遗漏。
+  - 保持大纲足够长以涵盖所有角度，但避免填充物。
+  - 确保流程读起来像具有明确目的地的有说服力的投资备忘录。
 
-  Deliver only the Markdown outline plus the writing-guidance notes.
+  输出格式（仅供风格示例）：
+  # 智能自动化、利润和可选性 — XYZ 公司深度分析
+  ## 需求顺风转化为持久的收入可见性
+  Writing guidance: 使用“2024 云自动化调查”和“行业追踪器 Vol.5”构建 TAM 讨论；强调企业采用节奏并引用积压订单表。插入一个比较 SaaS 与服务组合的堆积面积图。
+  ### 由工作流锁定锚定的定价权
+  Writing guidance: 总结“单位经济模型 v2”中的毛利率桥梁；解释流失数据；建议一个群组瀑布图。
+  ### 超大规模联盟扩大总合同价值
+  Writing guidance: 使用合作伙伴公告数据集加上“平台利润率追踪器”；指定 KPI 并添加联盟经济学的比较表。
+
+  仅交付 Markdown 大纲加上写作指南注释。
 
 outline_critique: |
-  You are an exacting Managing Director reviewing a subordinate's outline draft. Your sole objective is to expose every weakness—no praise, no solutions.
+  你是一位严苛的董事总经理 (MD)，正在审查下属的大纲草稿。你的唯一目标是揭露每一个弱点——没有赞美，没有解决方案。当前时间：{current_time}。
 
-  Reference information
-  - Core task: {task}
-  - Report requirements: {report_requirements}
-  - Available analysis results: {analysis_result_info}
-  - Outline under review: (provided below)
+  参考信息
+  - 核心任务：{task}
+  - 报告要求：{report_requirements}
+  - 可用的分析结果：{analysis_result_info}
+  - 正在审查的大纲：（如下所示）
 
-  Evaluation criteria
-  1. Narrative logic – does the story flow cleanly with convincing transitions, or are there gaps and jumps?
-  2. Heading quality – do the H1/H2/H3 titles convey sharp insights and a point of view?
-  3. Coverage – does the outline explicitly leverage all analysis outputs and meet every requirement?
-  4. Depth – does each writing-guidance note explain which data to cite, what chart to build, and which argument to make?
+  评估标准
+  1. 叙述逻辑 – 故事流程是否清晰，过渡是否令人信服，还是存在差距和跳跃？
+  2. 标题质量 – H1/H2/H3 标题是否传达了敏锐的见解和观点？
+  3. 覆盖范围 – 大纲是否明确利用了所有分析输出并满足每一个要求？
+  4. 深度 – 每个写作指南是否解释了要引用哪些数据，要构建什么图表，以及要提出什么论点？
 
-  Instructions
-  - Respond as a bullet list.
-  - Each bullet must call out one concrete deficiency tied to the criteria above.
-  - Do not offer fixes or compliments; only articulate the issues.
+  指示
+  - 作为一个项目符号列表进行回应。
+  - 每个项目必须指出一项与上述标准相关的具体缺陷。
+  - 不要提供修复或赞美；只阐明问题。
 
 outline_refinement: |
-  You are a senior analyst tasked with rewriting your outline after receiving the MD's critique.
+  你是一位资深分析师，负责在收到 MD 的批评后重写你的大纲。当前时间：{current_time}。
 
-  Inputs
-  - Core task: {task}
-  - Data analysis reports: {analysis_result_info}
-  - Mandatory requirements: {report_requirements}
-  - First-draft outline: (provided below)
-  - MD feedback that must be fully resolved: (provided below)
+  输入
+  - 核心任务：{task}
+  - 数据分析报告：{analysis_result_info}
+  - 强制性要求：{report_requirements}
+  - 初稿大纲：（如下所示）
+  - 必须完全解决的 MD 反馈：（如下所示）
 
-  Expectations
-  1. Internalize every critique point; none can be ignored.
-  2. Produce a brand-new outline that corrects all issues while still satisfying the original task and requirements.
-  3. Output only the final Markdown outline (same structure as in the draft prompt) with `Writing guidance:` under every H2 and H3. Do not add explanations outside the outline itself.
-
+  期望
+  1. 内化每一个批评点；没有一个可以被忽略。
+  2. 制作一个全新的大纲，纠正所有问题，同时仍然满足原始任务和要求。
+  3. 仅输出最终的 Markdown 大纲（结构与草稿提示相同），并在每个 H2 和 H3 下带有 `Writing guidance:`。不要在大纲之外添加解释。
 
 abstract: |
-  You are the lead author of the "Global AI Governance 2025" report. Summarize the global landscape, breakthroughs, and strategic outlook for AI governance in a concise executive summary.
+  你是“2025 全球 AI 治理”报告的首席作者。请总结全球格局、突破和 AI 治理的战略展望，形成一份简洁的执行摘要。当前时间：{current_time}。
 
-  Required components
-  1. **Headline development** – open with the most consequential global policy or governance milestone, naming the authority, timing, and overarching verdict.
-  2. **Policy landscape** – decode the measures in that event plus any bundled initiatives, stressing how they diverge from prior frameworks.
-  3. **Comparative governance** – contrast the philosophies and priorities of the US, EU, China (and other major blocs if relevant), citing statistics on regulatory adoption, enforcement, or funding.
-  4. **Commercial & societal impact** – explain how AI commercialization is reshaping governance debates (content provenance, watermarking, model audits) and detail societal consequences such as labor shifts, misinformation, or IP disputes with supporting data.
-  5. **Research frontiers** – summarize notable academic or institutional studies that push governance theory forward, noting convergences/divergences across regions.
-  6. **Forward strategy** – describe the likely evolution of global coordination, standards, and enforcement, and outline strategic recommendations for policymakers and enterprises.
-  7. **Risk statement** – concisely list the uncertainties that could derail governance progress.
+  ## 目标语言要求
+  **关键**：必须用 {target_language} 撰写。
+  - 对于英语 (en)：用英语撰写
+  - 对于中文 (zh)：用中文撰写
 
-  Output: Markdown starting with `##` and self-authored `###` subheadings that cover every component, each with information-rich paragraphs and optional bold thesis sentences.
+  所需组成部分
+  1. **标题开发** – 以最重要的全球政策或治理里程碑开篇，点名权威机构、时间和总体裁决。
+  2. **政策格局** – 解读该事件中的措施以及任何捆绑的倡议，强调它们如何偏离先前的框架。
+  3. **比较治理** – 对比美国、欧盟、中国（及其他主要集团，如相关）的理念和优先事项，引用有关监管采用、执行或资金的统计数据。
+  4. **商业与社会影响** – 解释 AI 商业化如何重塑治理辩论（内容来源、水印、模型审计），并详述社会后果，如劳动力转移、错误信息或带有支持数据的知识产权纠纷。
+  5. **研究前沿** – 总结推动治理理论发展的著名学术或机构研究，指出各地区的趋同/分歧。
+  6. **前瞻战略** – 描述全球协调、标准和执行的可能演变，并为决策者和企业概述战略建议。
+  7. **风险声明** – 简明列出可能阻碍治理进展的不确定性。
+
+  输出：Markdown，以 `##` 标题开头，包含涵盖每个组成部分的自撰 `###` 子标题，每个子标题下包含信息丰富的段落和可选的加粗主题句。
 
 title_generation: |
-  You are a sell-side research editor. Propose a fresh, compelling report title that reflects the paper's core thesis.
+  你是一位卖方研究编辑。提出一个新鲜、引人注目的报告标题，反映论文的核心论点。当前时间：{current_time}。
 
-  Rules:
-  1. The title must feel original and investment-grade; avoid phrases like "An analysis of …".
-  2. Make sure the wording aligns tightly with the report's content and is not overly broad.
-  3. Output only the title—no extra commentary.
+  ## 目标语言要求
+  **关键**：必须用 {target_language} 撰写。
+
+  规则：
+  1. 标题必须感觉原创且具有投资级水平；避免使用“关于...的分析”之类的短语。
+  2. 确保措辞与报告内容紧密一致，且不过于宽泛。
+  3. 仅输出标题——没有额外的评论。
 
 table_beautify: |
-  You are polishing a Markdown cash-flow table for publication. Apply the following rules:
-  1. Retain only the most material lines so the table stays under 20 rows; drop immaterial or sparsely populated items.
-  2. Bold any row labels representing totals or subtotals and remove prefixes such as "Add:" or "Less:".
-  3. Format numbers consistently: two decimals for fractions; use thousands separators for large figures; keep the first column left-aligned and numeric columns centered.
-  4. Show negative figures (or outflows) in parentheses instead of a minus sign.
-  5. Confirm the unit is RMB millions and adjust labels if necessary.
-  6. Do not invent data; reflect exactly what was provided.
+  你正在润色一个 Markdown 现金流表以供出版。应用以下规则：当前时间：{current_time}。
 
-  Return only the cleaned Markdown table.
+  1. 仅保留最重要的行，使表格保持在 20 行以下；删除不重要或稀疏填充的项目。
+  2. 加粗代表总计或小计的任何行标签，并删除前缀如“Add:”或“Less:”。
+  3. 格式化数字保持一致：分数保留两位小数；大数字使用千位分隔符；保持第一列左对齐，数字列居中。
+  4. 用括号显示负数（或流出）而不是减号。
+  5. 确认单位是人民币百万元（RMB millions），如有必要调整标签。
+  6. 不要编造数据；准确反映提供的内容。
 
-  Original table {table_name}:
+  仅返回清理后的 Markdown 表格。
+
+  原始表格 {table_name}:
   {table_data}
-

@@ -8,7 +8,6 @@ from src.utils.async_helpers import run_async_safely
 __all__ = [
     "LLM",
     "AsyncLLM",
-    "CodeExecutor",
     "AsyncCodeExecutor",
     "IndexBuilder",
     "get_logger",

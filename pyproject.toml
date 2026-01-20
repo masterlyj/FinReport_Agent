@@ -24,11 +24,13 @@ dependencies = [
     "pdfplumber>=0.11.8",
     "playwright>=1.57.0",
     "pydantic>=2.12.5",
+    "pytest>=9.0.2",
     "python-docx>=1.2.0",
     "python-dotenv>=1.2.1",
     "python-multipart>=0.0.21",
     "seaborn>=0.13.2",
     "streamlit>=1.52.2",
+    "tavily-python>=0.7.19",
     "uvicorn>=0.40.0",
     "websockets>=15.0.1",
 ]

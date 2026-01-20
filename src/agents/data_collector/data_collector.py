@@ -65,8 +65,22 @@ class DataCollector(BaseAgent):
         self.code_executor.set_variable("call_tool", self._agent_tool_function)
         self.code_executor.set_variable("save_result", self._save_result)
 
-    def _save_result(self, var: Any, result_name: str, result_description: str, data_source: str):
+    def _save_result(self, var: Any = None, result_name: str = None, result_description: str = None, data_source: str = None, **kwargs):
         """Persist execution results into self.collected_data_list."""
+        # Handle aliases for LLM robustness
+        if var is None:
+            var = kwargs.get('variable') or kwargs.get('data') or kwargs.get('content') or kwargs.get('value')
+        if result_name is None:
+            result_name = kwargs.get('name') or kwargs.get('title') or kwargs.get('key')
+        if result_description is None:
+            result_description = kwargs.get('description') or kwargs.get('desc') or kwargs.get('short_description') or kwargs.get('summary')
+        if data_source is None:
+            data_source = kwargs.get('source') or kwargs.get('source_name') or kwargs.get('url') or kwargs.get('data_source')
+            
+        if var is None or result_name is None:
+            self.logger.warning(f"save_result called with missing arguments: keys={kwargs.keys()}")
+            return
+
         self.memory.add_data(ToolResult(
             name=result_name,
             description=result_description,

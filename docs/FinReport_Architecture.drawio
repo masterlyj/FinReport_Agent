@@ -1,0 +1,348 @@
+<mxfile host="app.diagrams.net" modified="2026-01-19T10:53:00.000Z" agent="Antigravity" version="21.0.0">
+  <diagram id="architecture-overview" name="系统架构总览">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- 标题 -->
+        <mxCell id="title-1" value="FinReport Agent - 智能金融研报生成系统" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+          <mxGeometry x="400" y="30" width="800" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle-1" value="Chain-of-Analysis + Generative Retrieval Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=2;fontColor=#6c757d;" parent="1" vertex="1">
+          <mxGeometry x="500" y="75" width="600" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Phase 1: Data Collection -->
+        <mxCell id="phase1-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="40" y="130" width="480" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="phase1-title" value="Phase 1: 数据采集层" style="text;html=1;strokeColor=none;fillColor=#1976d2;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=16;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="140" y="140" width="280" height="35" as="geometry"/>
+        </mxCell>
+        
+        <!-- DataCollector Agents -->
+        <mxCell id="dc1" value="&lt;b&gt;DataCollector #1&lt;/b&gt;&lt;br&gt;📊 财务报表采集" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;strokeWidth=1;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="60" y="195" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="dc2" value="&lt;b&gt;DataCollector #2&lt;/b&gt;&lt;br&gt;📈 股价数据采集" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;strokeWidth=1;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="210" y="195" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="dc3" value="&lt;b&gt;DataCollector #3&lt;/b&gt;&lt;br&gt;🔍 网络搜索采集" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;strokeWidth=1;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="360" y="195" width="140" height="60" as="geometry"/>
+        </mxCell>
+        
+        <!-- Tools -->
+        <mxCell id="tools-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;strokeWidth=1;arcSize=12;" parent="1" vertex="1">
+          <mxGeometry x="60" y="280" width="440" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="tools-title" value="🛠️ 工具库 (Tools)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#388e3c;" parent="1" vertex="1">
+          <mxGeometry x="70" y="285" width="120" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="tool1" value="Financial API&lt;br&gt;(AKShare)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="70" y="310" width="90" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="tool2" value="DeepSearch&lt;br&gt;Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="170" y="310" width="90" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="tool3" value="Web Crawler&lt;br&gt;(Playwright)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="270" y="310" width="90" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="tool4" value="Macro/Industry&lt;br&gt;Data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="370" y="310" width="90" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow from Phase1 to Memory -->
+        <mxCell id="arrow1" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#ff6f00;entryX=0;entryY=0.5;exitX=1;exitY=0.5;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="525" y="270" as="sourcePoint"/>
+            <mxPoint x="560" y="270" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow1-label" value="ToolResult" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#ff6f00;" parent="1" vertex="1">
+          <mxGeometry x="525" y="245" width="60" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Memory (Central) -->
+        <mxCell id="memory-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ff6f00;strokeWidth=3;arcSize=8;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="560" y="160" width="180" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="memory-title" value="🧠 Memory" style="text;html=1;strokeColor=none;fillColor=#ff6f00;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="590" y="170" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="memory-data" value="📦 data[]&lt;br&gt;&lt;i&gt;ToolResult / AnalysisResult&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ff6f00;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="575" y="210" width="150" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="memory-tasks" value="📋 task_mapping[]&lt;br&gt;&lt;i&gt;Agent 任务映射&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ff6f00;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="575" y="260" width="150" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="memory-embed" value="🔢 data2embedding{}&lt;br&gt;&lt;i&gt;向量索引&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ff6f00;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="575" y="310" width="150" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Phase 2: Data Analysis (CoA) -->
+        <mxCell id="phase2-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="40" y="440" width="700" height="340" as="geometry"/>
+        </mxCell>
+        <mxCell id="phase2-title" value="Phase 2: Chain-of-Analysis (分析链)" style="text;html=1;strokeColor=none;fillColor=#7b1fa2;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=16;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="200" y="450" width="340" height="35" as="geometry"/>
+        </mxCell>
+        
+        <!-- Analysis Chains -->
+        <mxCell id="coa-label" value="&lt;b&gt;🔗 并行分析链&lt;/b&gt; - 每个子任务独立完成证据收集与结论提炼" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontColor=#6a1b9a;" parent="1" vertex="1">
+          <mxGeometry x="60" y="495" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <!-- CoA Chain 1 -->
+        <mxCell id="coa1" value="&lt;b&gt;CoA #1: 财务分析&lt;/b&gt;&lt;br&gt;营收趋势 / 利润率 / 现金流" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1bee7;strokeColor=#7b1fa2;strokeWidth=2;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="60" y="525" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="coa2" value="&lt;b&gt;CoA #2: 竞争分析&lt;/b&gt;&lt;br&gt;市场份额 / 竞争格局" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1bee7;strokeColor=#7b1fa2;strokeWidth=2;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="270" y="525" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="coa3" value="&lt;b&gt;CoA #3: 风险评估&lt;/b&gt;&lt;br&gt;经营风险 / 政策风险" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1bee7;strokeColor=#7b1fa2;strokeWidth=2;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="480" y="525" width="200" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- VLM Loop -->
+        <mxCell id="vlm-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;strokeWidth=1;arcSize=12;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="60" y="600" width="410" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="vlm-title" value="🎨 VLM 图表优化循环" style="text;html=1;strokeColor=none;fillColor=#c2185b;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="170" y="605" width="160" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="vlm-step1" value="1️⃣ LLM 生成&lt;br&gt;绘图代码" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8bbd9;strokeColor=#c2185b;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="75" y="645" width="85" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="vlm-step2" value="2️⃣ 执行代码&lt;br&gt;生成图表" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8bbd9;strokeColor=#c2185b;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="175" y="645" width="85" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="vlm-step3" value="3️⃣ VLM 评估&lt;br&gt;图表质量" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8bbd9;strokeColor=#c2185b;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="275" y="645" width="85" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="vlm-step4" value="4️⃣ 迭代改进&lt;br&gt;(max 3轮)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8bbd9;strokeColor=#c2185b;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="375" y="645" width="85" height="50" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="vlm-arrow1" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#c2185b;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="160" y="670" as="sourcePoint"/>
+            <mxPoint x="175" y="670" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vlm-arrow2" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#c2185b;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="260" y="670" as="sourcePoint"/>
+            <mxPoint x="275" y="670" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vlm-arrow3" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#c2185b;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="670" as="sourcePoint"/>
+            <mxPoint x="375" y="670" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vlm-loop-arrow" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#c2185b;curved=1;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="417" y="700" as="sourcePoint"/>
+            <mxPoint x="117" y="700" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="267" y="740"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vlm-loop-label" value="反馈循环" style="text;html=1;align=center;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#c2185b;" parent="1" vertex="1">
+          <mxGeometry x="240" y="725" width="60" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- AnalysisResult Output -->
+        <mxCell id="analysis-result" value="&lt;b&gt;📄 AnalysisResult&lt;/b&gt;&lt;hr&gt;• title: 分析主题&lt;br&gt;• content: 分析结论&lt;br&gt;• chart_mapping: 图表映射&lt;br&gt;• descriptions: 图表描述" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#512da8;strokeWidth=2;fontSize=11;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="490" y="600" width="180" height="120" as="geometry"/>
+        </mxCell>
+        
+        <!-- Arrow to AnalysisResult -->
+        <mxCell id="ar-arrow" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#512da8;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="470" y="660" as="sourcePoint"/>
+            <mxPoint x="490" y="660" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Phase 3: Report Generation -->
+        <mxCell id="phase3-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="780" y="130" width="780" height="650" as="geometry"/>
+        </mxCell>
+        <mxCell id="phase3-title" value="Phase 3: Report Generation + Generative Retrieval" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=16;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="950" y="140" width="440" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- Sub-phase: Outline -->
+        <mxCell id="outline-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;strokeWidth=1;arcSize=12;" parent="1" vertex="1">
+          <mxGeometry x="800" y="190" width="240" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="outline-title" value="📝 Step 1: 大纲生成" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="850" y="195" width="140" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="outline-content" value="基于 AnalysisResult&lt;br&gt;构建报告骨架结构&lt;br&gt;&lt;br&gt;• 加载大纲模板&lt;br&gt;• LLM 规划章节" style="text;html=1;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="810" y="225" width="220" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- Sub-phase: Section Writing -->
+        <mxCell id="section-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;strokeWidth=1;arcSize=12;" parent="1" vertex="1">
+          <mxGeometry x="800" y="340" width="240" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="section-title" value="✍️ Step 2: 章节撰写" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="850" y="345" width="140" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="section-content" value="逐章节异步生成内容&lt;br&gt;&lt;br&gt;生成占位符:&lt;br&gt;&lt;code&gt;@import &quot;Revenue Chart&quot;&lt;/code&gt;&lt;br&gt;&lt;code&gt;[Source: 财务报表]&lt;/code&gt;&lt;br&gt;&lt;br&gt;可调用:&lt;br&gt;• get_data(id)&lt;br&gt;• get_analysis_result(id)&lt;br&gt;• get_data_from_deep_search()" style="text;html=1;align=left;verticalAlign=top;fontSize=10;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="810" y="375" width="220" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- Generative Retrieval Box -->
+        <mxCell id="gr-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f57c00;strokeWidth=2;arcSize=8;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="190" width="480" height="330" as="geometry"/>
+        </mxCell>
+        <mxCell id="gr-title" value="🔍 Generative Retrieval (生成式检索)" style="text;html=1;strokeColor=none;fillColor=#f57c00;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="1180" y="200" width="240" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="gr-desc" value="写作过程中动态生成索引标识符，后处理阶段统一进行语义检索匹配" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#e65100;" parent="1" vertex="1">
+          <mxGeometry x="1090" y="235" width="420" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Image Retrieval -->
+        <mxCell id="img-retrieval" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffecb3;strokeColor=#f57c00;strokeWidth=1;arcSize=12;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="265" width="210" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="img-title" value="🖼️ 图片检索" style="text;html=1;strokeColor=none;fillColor=#ff9800;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="1125" y="270" width="120" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="img-content" value="&lt;b&gt;输入:&lt;/b&gt; @import &quot;Revenue Chart&quot;&lt;br&gt;&lt;br&gt;&lt;b&gt;IndexBuilder.search()&lt;/b&gt;&lt;br&gt;语义相似度匹配&lt;br&gt;&lt;br&gt;&lt;b&gt;输出:&lt;/b&gt; ![Figure 1](path.png)" style="text;html=1;align=left;verticalAlign=top;fontSize=10;spacingLeft=5;" parent="1" vertex="1">
+          <mxGeometry x="1085" y="295" width="195" height="95" as="geometry"/>
+        </mxCell>
+
+        <!-- Citation Retrieval -->
+        <mxCell id="cite-retrieval" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffecb3;strokeColor=#f57c00;strokeWidth=1;arcSize=12;" parent="1" vertex="1">
+          <mxGeometry x="1310" y="265" width="210" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="cite-title" value="📚 引用检索" style="text;html=1;strokeColor=none;fillColor=#ff9800;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="1355" y="270" width="120" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="cite-content" value="&lt;b&gt;输入:&lt;/b&gt; [Source: 财务报表]&lt;br&gt;&lt;br&gt;&lt;b&gt;IndexBuilder.search()&lt;/b&gt;&lt;br&gt;向量相似度 &gt; 0.2&lt;br&gt;&lt;br&gt;&lt;b&gt;输出:&lt;/b&gt; [1,2] + Reference List" style="text;html=1;align=left;verticalAlign=top;fontSize=10;spacingLeft=5;" parent="1" vertex="1">
+          <mxGeometry x="1315" y="295" width="195" height="95" as="geometry"/>
+        </mxCell>
+
+        <!-- IndexBuilder -->
+        <mxCell id="indexbuilder" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#e65100;strokeWidth=2;arcSize=12;" parent="1" vertex="1">
+          <mxGeometry x="1130" y="410" width="340" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib-title" value="⚡ IndexBuilder" style="text;html=1;strokeColor=none;fillColor=#e65100;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="1235" y="415" width="130" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib-content" value="&lt;b&gt;_build_index()&lt;/b&gt; → 批量生成 Embedding&lt;br&gt;&lt;b&gt;search()&lt;/b&gt; → np.dot() 余弦相似度 → Top-K 排序&lt;br&gt;&lt;b&gt;缓存机制&lt;/b&gt; → JSON + NPZ 持久化" style="text;html=1;align=left;verticalAlign=top;fontSize=10;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="1140" y="445" width="320" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Post-process -->
+        <mxCell id="post-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;strokeWidth=1;arcSize=12;" parent="1" vertex="1">
+          <mxGeometry x="800" y="540" width="740" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="post-title" value="🎯 Step 3: 后处理流水线" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="545" width="180" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="post-step1" value="Step 0&lt;br&gt;图片路径替换" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="585" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="post-step2" value="Step 1&lt;br&gt;摘要/标题生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="935" y="585" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="post-step3" value="Step 2&lt;br&gt;封面/基础数据" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="585" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="post-step4" value="Step 3&lt;br&gt;引用替换" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1165" y="585" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="post-step5" value="Step 4&lt;br&gt;Pandoc 渲染" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#2e7d32;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1280" y="585" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="post-output" value="📄 .md&lt;br&gt;📝 .docx&lt;br&gt;📕 .pdf" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81c784;strokeColor=#2e7d32;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="580" width="120" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows between post steps -->
+        <mxCell id="post-arr1" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2e7d32;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="920" y="610" as="sourcePoint"/>
+            <mxPoint x="935" y="610" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="post-arr2" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2e7d32;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1035" y="610" as="sourcePoint"/>
+            <mxPoint x="1050" y="610" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="post-arr3" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2e7d32;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1150" y="610" as="sourcePoint"/>
+            <mxPoint x="1165" y="610" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="post-arr4" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2e7d32;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1265" y="610" as="sourcePoint"/>
+            <mxPoint x="1280" y="610" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="post-arr5" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2e7d32;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1380" y="610" as="sourcePoint"/>
+            <mxPoint x="1400" y="610" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Connection arrows -->
+        <mxCell id="mem-to-p3" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#ff6f00;entryX=0;entryY=0.3;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="740" y="270" as="sourcePoint"/>
+            <mxPoint x="780" y="270" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-to-mem" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#7b1fa2;entryX=0.5;entryY=1;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="650" y="440" as="sourcePoint"/>
+            <mxPoint x="650" y="385" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-mem-label" value="AnalysisResult" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#7b1fa2;" parent="1" vertex="1">
+          <mxGeometry x="655" y="400" width="85" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Technology Stack Legend -->
+        <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#9e9e9e;strokeWidth=1;arcSize=8;" parent="1" vertex="1">
+          <mxGeometry x="800" y="680" width="740" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-title" value="🔧 技术栈" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#424242;" parent="1" vertex="1">
+          <mxGeometry x="815" y="685" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1" value="🤖 LLM: DeepSeek / Qwen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="815" y="710" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg2" value="👁️ VLM: Qwen-VL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="965" y="710" width="110" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg3" value="🔢 Embedding: text-embedding-v3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f57c00;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1085" y="710" width="170" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg4" value="📊 Data: AKShare + Playwright" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1265" y="710" width="150" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg5" value="📄 Render: Pandoc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1425" y="710" width="100" height="40" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

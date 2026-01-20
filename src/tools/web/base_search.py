@@ -1,19 +1,17 @@
 """
-Web Search Tools Module
+网页搜索工具模块
 
-This module provides web search and content extraction functionality.
-It imports and exposes the main search tools from submodules.
+该模块提供网页搜索和内容提取功能。
+它从子模块导入并公开主要的搜索工具。
 """
 
 from ..base import ToolResult
+from pydantic import Field
 
 class SearchResult(ToolResult):
-    """Container for web search results."""
-
-    def __init__(self, query, name, description, data, link = "", source=""):
-        super().__init__(name, description, data, source)
-        self.query = query
-        self.link = link
+    """网络搜索结果的容器。"""
+    query: str = Field("", description="Search query")
+    link: str = Field("", description="URL link")
 
     def __str__(self):
         format_output = f'Search Result for {self.query}\n'
@@ -27,10 +25,7 @@ class SearchResult(ToolResult):
 
 
 class ImageSearchResult(SearchResult):
-    """Container for image search results."""
-
-    def __init__(self, query, name, description, data, link = "", source=""):
-        super().__init__(query, name, description, data, link, source)
+    """图像搜索结果的容器。"""
 
     def __str__(self):
         format_output = f'Image Search Result for {self.query}\n'

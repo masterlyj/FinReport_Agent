@@ -504,9 +504,12 @@ class DataAnalyzer(BaseAgent):
         else:
             run_result = self.current_checkpoint.get('phase1_result', {})
         try:
-            final_result = run_result['final_result']
-        except:
-            self.logger.error(f"final_result: {final_result}")
+            final_result = run_result.get('final_result', '')
+            if not final_result:
+                self.logger.warning("run_result does not contain 'final_result'")
+        except Exception as e:
+            self.logger.error(f"Error extracting final_result: {e}")
+            final_result = ""
         # Parse the generated analysis report
         if self.current_phase == 'phase2':
             report_title, report_content = self._parse_generated_report(final_result)

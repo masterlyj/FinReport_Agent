@@ -7,7 +7,7 @@ import subprocess
 import numpy as np
 import docx2pdf
 from src.agents.base_agent import BaseAgent
-from src.agents import DeepSearchAgent
+from src.agents.search_agent.search_agent import DeepSearchAgent
 from src.tools.web.web_crawler import ClickResult
 from src.tools import ToolResult, get_tool_categories, get_tool_by_name
 from src.agents.report_generator.report_class import Report, Section
@@ -23,8 +23,9 @@ class ReportGenerator(BaseAgent):
         config,
         tools = [],
         use_llm_name: str = "deepseek-chat",
-        use_embedding_name: str = "qwen3-embedding",
+        use_embedding_name: str = "qwen3-embedding-0.6",
         enable_code = True,
+        enable_chart = True,
         memory = None,
         agent_id: str = None
     ):
@@ -36,6 +37,7 @@ class ReportGenerator(BaseAgent):
             memory=memory,
             agent_id=agent_id
         )
+        self.enable_chart = enable_chart
         # Load prompts based on language and target type settings
         from src.utils.prompt_loader import get_prompt_loader
         
@@ -163,14 +165,14 @@ class ReportGenerator(BaseAgent):
         # Prepare data information for the agent
         collect_data_list = self.memory.get_collect_data(exclude_type=['search', 'click'])
         analysis_result_list = self.memory.get_analysis_result()
-        data_info = "\n\n## Available Datas\n\n"
+        data_info = "\n\n## 可用数据 (Available Data)\n\n"
         for idx, item in enumerate(collect_data_list):
-            data_info += f"**Data ID {idx}:**\n{item.brief_str()}\n\n"
-        data_info += "\nYou can access these datasets using `get_data(data_id)` in your code.\n"
-        data_info += "\n\n## Available Analysis Reports\n\n"
+            data_info += f"**数据 ID {idx}:**\n{item.brief_str()}\n\n"
+        data_info += "\n你可以使用 `get_data(data_id)` 在代码中访问这些数据集。\n"
+        data_info += "\n\n## 可用分析报告 (Available Analysis Reports)\n\n"
         for idx, item in enumerate(analysis_result_list):
-            data_info += f"**Analysis Report ID {idx}:**\n{item.brief_str()}\n\n"
-        data_info += "\nYou can access these analysis reports using `get_analysis_result(analysis_result_id)` in your code.\n"
+            data_info += f"**分析报告 ID {idx}:**\n{item.brief_str()}\n\n"
+        data_info += "\n你可以使用 `get_analysis_result(analysis_result_id)` 在代码中访问这些分析报告。\n"
         
         if self.enable_chart:
             return [{
@@ -182,7 +184,8 @@ class ReportGenerator(BaseAgent):
                     data_api=data_api_description,
                     data_info=data_info,
                     max_iterations=max_iterations,
-                    target_language=self.target_language_name
+                    target_language=self.target_language_name,
+                    current_time=self.current_time
                 )
             }]
         else:
@@ -195,7 +198,8 @@ class ReportGenerator(BaseAgent):
                     data_api=data_api_description,
                     data_info=data_info,
                     max_iterations=max_iterations,
-                    target_language=self.target_language_name
+                    target_language=self.target_language_name,
+                    current_time=self.current_time
                 )
             }]
 
@@ -244,7 +248,8 @@ class ReportGenerator(BaseAgent):
         final_prompt = self.FINAL_POLISH_PROMPT.format(
             draft_report = draft_section,
             reference_image = reference_image,
-            target_language = self.target_language_name
+            target_language = self.target_language_name,
+            current_time = self.current_time
         )
         
         final_message = [{"role": "user", "content": final_prompt}]
@@ -321,21 +326,21 @@ class ReportGenerator(BaseAgent):
                         detect_img_name = img_captions[most_similar_idx]
                         detect_img_path = img_paths[most_similar_idx]
                         
-                        if len(img_captions) == 1:
-                            # No images left to map
-                            self.logger.warning("Available images are exhausted; stop replacing images.")
-                            # directly delete the image placeholder
-                            p_paragraph = p_paragraph.replace(img_name, "")
-                            continue
-                        del img_captions[most_similar_idx]
-                        del img_paths[most_similar_idx]
-                        # Rebuild the index after consuming this caption
-                        await index._build_index(img_captions)
-
+                        # 使用匹配的图像并将其从可用池中移除
                         new_string = get_md_img(detect_img_path, remove_suffix(os.path.basename(detect_img_path)), figure_idx)
                         figure_idx += 1
                         used_img_list.append(detect_img_name)
                         p_paragraph = p_paragraph.replace(img_name, new_string)
+
+                        del img_captions[most_similar_idx]
+                        del img_paths[most_similar_idx]
+
+                        if len(img_captions) > 0:
+                            # Rebuild the index after consuming this caption
+                            await index._build_index(img_captions)
+                        else:
+                            # No more images left for future placeholders
+                            self.logger.info("All available images have been used.")
 
                 section_new_content.append(p_paragraph)
             section._content = section_new_content
@@ -354,7 +359,11 @@ class ReportGenerator(BaseAgent):
             messages = [
             {
                 'role': 'user',
-                'content': abstract_prompt.format(target_language=self.target_language_name, report_content=report.content)
+                'content': abstract_prompt.format(
+                    target_language=self.target_language_name, 
+                    report_content=report.content,
+                    current_time=self.current_time
+                )
             }
         ])
         response_content = extract_markdown(response_content)
@@ -364,7 +373,11 @@ class ReportGenerator(BaseAgent):
             messages = [
             {
                 'role': 'user',
-                'content': title_prompt.format(target_language=self.target_language_name, report_content=report.content)
+                'content': title_prompt.format(
+                    target_language=self.target_language_name, 
+                    report_content=report.content,
+                    current_time=self.current_time
+                )
             }
         ])
         new_title = new_title.replace("#","").strip()
@@ -380,14 +393,27 @@ class ReportGenerator(BaseAgent):
         if stock_code == "":
             return report
 
-        output_str = "\n\n## Company Fundamentals\n\n"
+        lang = self.config.config.get('language', 'zh')
+        is_zh = lang == 'zh'
+        
+        headers = {
+            'fundamentals': "公司基本面" if is_zh else "Company Fundamentals",
+            'income': "利润表" if is_zh else "Income Statement",
+            'balance': "资产负债表" if is_zh else "Balance Sheet",
+            'cashflow': "现金流量表" if is_zh else "Cash-Flow Statement",
+            'shareholder': "股东结构" if is_zh else "Shareholder Structure",
+            'price_trend': "股价走势" if is_zh else "Share Price Trend",
+            'price_alt': "股价表现" if is_zh else "Trailing price performance"
+        }
+
+        output_str = f"\n\n## {headers['fundamentals']}\n\n"
         # Three statements + shareholder profile
         collect_data_list = self.memory.get_collect_data()
         table_configs = [
-            ("Income statement", "Income Statement"),
-            ("Balance sheet", "Balance Sheet"),
-            ("Cash-flow statement", "Cash-Flow Statement"),
-            ("Shareholding structure", "Shareholder Structure"),
+            ("Income statement", headers['income']),
+            ("Balance sheet", headers['balance']),
+            ("Cash-flow statement", headers['cashflow']),
+            ("Shareholding structure", headers['shareholder']),
         ]
         for keyword, display_name in table_configs:
             target_item_list = [item for item in collect_data_list if keyword in item.name and stock_code in item.name]
@@ -403,7 +429,7 @@ class ReportGenerator(BaseAgent):
                 if keyword in ["Income statement", "Balance sheet", "Cash-flow statement"]:
                     if 'Category' in table_data.columns:
                         table_data.rename(columns={'Category': 'Line item (RMB mn)'}, inplace=True)
-                prompt = self.TABLE_BEAUTIFY_PROMPT.format(table_name=display_name, table_data=table_data.to_markdown(index=False))
+                prompt = self.TABLE_BEAUTIFY_PROMPT.format(table_name=display_name, table_data=table_data.to_markdown(index=False), current_time=self.current_time)
                 response = await self.llm.generate(
                     messages = [
                         {"role": "user", "content": prompt}
@@ -433,13 +459,13 @@ class ReportGenerator(BaseAgent):
                         if '\u6536\u76d8' in kline_data.columns:
                             kline_data.rename(columns={'\u6536\u76d8': 'close'}, inplace=True)
                     fig_path = draw_kline_chart(kline_data, self.working_dir)
-                    output_str += f'\n\n### Share Price Trend\n\n'
-                    output_str += f'![Trailing price performance]({fig_path})\n\n'
+                    output_str += f'\n\n### {headers["price_trend"]}\n\n'
+                    output_str += f'![{headers["price_alt"]}]({fig_path})\n\n'
         except Exception as e:
             self.logger.error(f"Failed to draw price trend: {e}", exc_info=True)
             pass
 
-        first_section = Section('Company Fundamentals', output_str)
+        first_section = Section(headers['fundamentals'], output_str)
         first_section.set_content(output_str)
         report.sections = [first_section] + report.sections
 
@@ -580,7 +606,11 @@ class ReportGenerator(BaseAgent):
                     messages = [
                     {
                         'role': 'user',
-                        'content': self.TITLE_PROMPT.format(target_language=self.target_language_name, report_content=report.content)
+                        'content': self.TITLE_PROMPT.format(
+                            target_language=self.target_language_name, 
+                            report_content=report.content,
+                            current_time=self.current_time
+                        )
                     }
                 ])
                 new_title = new_title.replace("#","").strip()
@@ -728,7 +758,8 @@ class ReportGenerator(BaseAgent):
             data_api=data_api_description,
             data_info=data_info,
             max_iterations=max_iterations,
-            target_language=self.target_language_name
+            target_language=self.target_language_name,
+            current_time=self.current_time
         )
         return [{"role": "system", "content": initial_prompt}]
 

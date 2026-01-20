@@ -433,6 +433,8 @@ class BaseAgent:
                 print(f"\n\n{display_note}\n\n", file=sys.stdout, flush=True)
 
                 self.memory.add_log(target_tool.id, target_tool.type, kwargs, response, error=False, note=f"Tool {target_tool.name} executed successfully")
+                if len(data_list) == 1:
+                    return data_list[0]
                 return data_list
             else:
                 self.logger.warning(f"Unknown tools: {tool_name}")
@@ -502,6 +504,7 @@ class BaseAgent:
             current_round += 1
             self.current_round = current_round
             response = await self.llm.generate(messages = conversation_history, stop=stop_words)
+            self.logger.info(f"DEBUG: LLM response length: {len(response) if response else 'None'}")
             action_type, action_content = self._parse_llm_response(response)
             if echo:
                 self.logger.info(f"LLM response this step: {response}")
@@ -599,14 +602,27 @@ class BaseAgent:
     
 
     async def _handle_code_action(self, action_content: str):
-        code_result = await self.code_executor.execute(code=action_content)
+        # Clean up the code content: remove Markdown code blocks if present
+        cleaned_code = self._extract_code_from_markdown(action_content)
+        code_result = await self.code_executor.execute(code=cleaned_code)
         code_result = self._format_execution_result(code_result)
         return {
             "action": "generate_code",
-            "action_content": action_content,
+            "action_content": cleaned_code,
             "result": code_result,
             "continue": True,
         }
+
+    def _extract_code_from_markdown(self, text: str) -> str:
+        """Extract code from markdown code blocks if they exist."""
+        # Check for triple backtick blocks
+        pattern = re.compile(r"```(?:python|py)?\n?(.*?)```", re.DOTALL | re.IGNORECASE)
+        match = pattern.search(text)
+        if match:
+            return match.group(1).strip()
+        
+        # If no markdown blocks, return original but stripped
+        return text.strip()
 
     async def _handle_final_action(self, action_content: str):
         return {

@@ -150,3 +150,10 @@ class Config:
             
     def __str__(self):
         return str(self.config)
+
+    async def close(self):
+        """关闭所有 LLM 实例"""
+        if hasattr(self, 'llm_dict'):
+            for llm in self.llm_dict.values():
+                if hasattr(llm, 'close'):
+                    await llm.close()

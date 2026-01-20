@@ -195,7 +195,7 @@ class BalanceSheet(Tool):
             else:
                 raise ValueError(f"Unsupported market flag: {market}. Use 'HK' or 'A'.")
             
-            log_info(f"✓ Successfully fetched balance sheet from {data_source}")
+            log_info(f"[v] Successfully fetched balance sheet from {data_source}")
             
         except Exception as e:
             error_msg = f"Eastmoney API failed: {e}"
@@ -213,7 +213,7 @@ class BalanceSheet(Tool):
                     )
                     data_source = "Sina Finance (新浪财经)"
                     error_msg = None  # Clear error since fallback succeeded
-                    log_info(f"✓ Successfully fetched balance sheet from Sina Finance")
+                    log_info(f"[v] Successfully fetched balance sheet from Sina Finance")
                     
                 except Exception as e2:
                     error_msg = f"Both sources failed - Eastmoney: {e}, Sina: {e2}"

@@ -1,218 +1,89 @@
-"""
-Web Crawler APIs
-
-This module contains web crawling and content extraction functionality.
-"""
-
-from typing import List, Dict
-import re
-import json
 import asyncio
-import aiohttp
 import httpx
-from io import BytesIO
-import pdfplumber
-import chardet
-
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
-from openai import OpenAI
-from bs4 import BeautifulSoup
-
+from typing import List, Dict, Any, Optional
+from pydantic import Field
+from .base_search import SearchResult
 from ..base import Tool, ToolResult
+from ...utils.logger import get_logger
 
+logger = get_logger()
 
-
+class ClickResult(SearchResult):
+    """Result of a web crawling action."""
+    content: str = Field("", description="Extracted markdown content from the page")
+    
+    def __str__(self):
+        return f"Click Result for {self.link}\nTitle: {self.name}\nContent Preview: {self.content[:200]}..."
 
 class Click(Tool):
     """
-    Web-page detail retrieval tool that fetches HTML or PDF content for review.
+    Tool for crawling web pages and extracting content.
+    Uses crawl4ai as primary engine with fallback to simple fetch.
     """
 
     def __init__(self):
         super().__init__(
-            name="Web page content fetcher",
-            description="Retrieve detailed content for the supplied URLs (HTML or PDF) to support downstream analysis.",
-            parameters=[
-                {"name": "urls", "type": "List[str]", "description": "List of URLs to crawl", "required": True},
-                {"name": "task", "type": "str", "description": "Overall task description used for filtering/summarization", "required": True}
-            ],
+            name="Click",
+            description="Extract full content from a given URL. Useful for reading specific articles or reports.",
+            parameters=[{
+                "name": "url",
+                "type": "str",
+                "description": "The URL to crawl",
+                "required": True
+            }]
         )
-        self.type = 'tool_click'
-    
+        self.backend = 'crawl4ai'
+        self.type = 'tool_crawler'
+
     async def fetch_url(self, url: str) -> str:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-
+        """Fallback method to fetch URL content using httpx."""
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers, timeout=10) as response:
-                    if response.status != 200:
-                        return f"Error fetching url: HTTP status code {response.status}"
-                    
-                    # Decode with detected encoding to avoid UTF-8 decode errors
-                    raw_bytes = await response.read()
-                    if not raw_bytes:
-                        return "Error fetching url: Empty response"
-                    detected_encoding = response.charset or chardet.detect(raw_bytes).get('encoding') or 'utf-8'
-                    html_content = raw_bytes.decode(detected_encoding, errors='replace')
-            
-            soup = BeautifulSoup(html_content, 'html.parser')
+            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                response = await client.get(url, headers=headers)
+                response.raise_for_status()
+                # Simple markdown-like conversion or just return text
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(response.text, 'html.parser')
+                # Remove script and style elements
+                for script in soup(["script", "style"]):
+                    script.decompose()
+                return soup.get_text(separator='\n', strip=True)
+        except Exception as e:
+            logger.error(f"Fallback fetch failed for {url}: {e}")
+            return f"Error fetching content: {str(e)}"
 
-            for element in soup(['script', 'style', 'meta', 'noscript', 'head', 'title']):
-                element.extract() 
-            text = soup.get_text(separator=' ')
+    async def api_function(self, url: str) -> List[ClickResult]:
+        """Execute the crawling action."""
+        content = ""
+        success = False
         
-            lines = (line.strip() for line in text.splitlines())
-            clean_text = '\n'.join(line for line in lines if line)
-   
-            return clean_text
-
-        except asyncio.TimeoutError:
-            return "Error fetching url: Request timeout"
-        except Exception as e:
-            return f"Error fetching url: {str(e)}"
-
-    async def api_function(self, urls: List[str], task: str) -> List[ToolResult]:
-        """
-        Crawl each URL and return the retrieved content (up to 10,000 chars).
-
-        Args:
-            urls: List of target URLs.
-            task: Task description for future filtering (currently unused).
-
-        Returns:
-            List[ToolResult]: Collected page snippets.
-        """
-        if isinstance(urls, str):
-            urls = [urls]
         try:
-            browser_conf = BrowserConfig(headless=True)  # or False to see the browser
-            run_conf = CrawlerRunConfig(
-                cache_mode=CacheMode.BYPASS
-            )
-            result_list = []
-            for url in urls:
-                if url.endswith(".pdf"):
-                    content = await self.extract_pdf_text_async(url)
+            from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
+            
+            browser_conf = BrowserConfig(headless=True, verbose=False)
+            run_conf = CrawlerRunConfig(cache_mode="BYPASS")
+            
+            async with AsyncWebCrawler(config=browser_conf) as crawler:
+                result = await crawler.arun(url=url, config=run_conf)
+                if result and result.success:
+                    content = result.markdown
+                    success = True
                 else:
-                    async with AsyncWebCrawler(config=browser_conf) as crawler:
-                        result = await crawler.arun(url=url, config=run_conf)
-                        content = str(result.markdown)
-                    
-                    # use naive requests with async to get the content
-                    # content = await self.fetch_url(url)
-
-                # if task == '' or len(content) < 10000:
-                result_list.append(
-                    ClickResult(
-                        name=content[:30],
-                        description=f"Title: {url}",
-                        data=content[:6000],
-                        link=url,
-                        source=f"URL: {url}"
-                    )
-                )
-                # else:    
-                #     # Use an LLM to extract the task-relevant snippets
-                #     response = llm.generate(
-                #         messages=[
-                #             {"role": "system", "content": CONTENT_SUMMARY_PROMPT},
-                #             {"role": "user", "content": f"Extract information related to {task} from the following page:\n{content[:10000]}"}
-                #         ]
-                #     )
-                    
-                #     summary_json = self.extract_json_from_text(response)
-                #     if summary_json and summary_json.get('title') and summary_json.get('content'):
-                #         result_list.append(
-                #             ClickResult(
-                #                 name=f"Detailed information for {url}",
-                #                 description=f"Title：{summary_json['title']}", 
-                #                 data=summary_json['content'],
-                #                 source=f"URL: {url}"
-                #             )
-                #         )
-            return result_list
-
+                    logger.warning(f"Crawl4AI failed for {url}, falling back...")
         except Exception as e:
-            print(f"Error: {e}")
-            return []
-    
+            logger.warning(f"Crawl4AI error for {url}: {e}, falling back...")
 
-    def extract_json_from_text(self, text: str) -> Dict:
-        """
-        Attempt to parse a JSON object embedded in the supplied text.
-
-        Args:
-            text: Text that may contain JSON.
-
-        Returns:
-            Dict: Parsed JSON object, or None on failure.
-        """
-        # First attempt to match fenced ```json``` blocks
-        pattern = r'```json(.*?)```'
-        match = re.search(pattern, text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(1).strip())
-            except Exception as e:
-                print(f"Error parsing JSON from code block: {e}")
-                return None
-        else:
-            # Fallback: parse the entire string as JSON
-            try:
-                return json.loads(text)
-            except Exception as e:
-                print(f"Error parsing JSON directly: {e}")
-                return None
-
-    async def extract_pdf_text_async(self, url: str) -> str:
-        """
-        Asynchronously extract text from a PDF URL.
-
-        Args:
-            url: PDF file URL.
-
-        Returns:
-            str: Extracted text or an error message.
-        """
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, timeout=30)
-                if response.status_code != 200:
-                    return f"Error: Unable to retrieve the PDF (status code {response.status_code})"
-                
-                content = response.content
-                
-                with pdfplumber.open(BytesIO(content)) as pdf:
-                    full_text = ""
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            full_text += text
-                
-                return full_text
-                
-        except Exception as e:
-            return f"Error: {str(e)}"
-
-
-class ClickResult(ToolResult):
-    """Container for web-content retrieval outputs."""
-
-    def __init__(self, name, description, data, link="", source=""):
-        super().__init__(name, description, data, source)
-        self.link = link
-
-    def __str__(self):
-        format_output = self.name + "\n" + self.description + "\n\n"
-        format_output += f"Content: {self.data}"
-        return format_output
-    
-    def brief_str(self):
-        format_output = self.name + "\n" + self.description + "\n\n"
-        format_output += f"Content: {self.data[:100]}"
-        return format_output
-
-    def __repr__(self):
-        return self.__str__()
+        if not success:
+            content = await self.fetch_url(url)
+            
+        return [ClickResult(
+            name="Web Page Content",
+            description=f"Extracted content from {url}",
+            data={"content": content},
+            link=url,
+            content=content,
+            source=f"Crawled from {url}"
+        )]

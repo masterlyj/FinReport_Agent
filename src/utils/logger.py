@@ -21,6 +21,31 @@ class AgentContextFilter(logging.Filter):
         return True
 
 
+class SafeStreamHandler(logging.StreamHandler):
+    """
+    一个通过替换不兼容字符来处理UnicodeEncodeError的StreamHandler。
+    适用于采用非UTF-8编码（例如GBK）的Windows控制台。
+    """
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            stream = self.stream
+            try:
+                stream.write(msg + self.terminator)
+            except UnicodeEncodeError:
+                # If the default encoding fails, try to print it safely
+                # Get the encoding of the stream, default to utf-8 if None
+                encoding = getattr(stream, 'encoding', 'utf-8') or 'utf-8'
+                # Encode with replacement characters
+                encoded_msg = msg.encode(encoding, errors='replace')
+                # Decode back to string so stream.write accepts it
+                decoded_msg = encoded_msg.decode(encoding)
+                stream.write(decoded_msg + self.terminator)
+            self.flush()
+        except Exception:
+            self.handleError(record)
+
+
 class Logger:
     """Thread-safe singleton logger."""
     
@@ -57,7 +82,8 @@ class Logger:
         
         context_filter = AgentContextFilter()
         
-        console_handler = logging.StreamHandler(sys.stdout)
+        # Use SafeStreamHandler instead of standard StreamHandler
+        console_handler = SafeStreamHandler(sys.stdout)
         console_handler.setLevel(log_level)
         console_handler.setFormatter(simple_formatter)
         console_handler.addFilter(context_filter)
@@ -119,29 +145,29 @@ class Logger:
         _cv_agent_id.set('N/A')
         _cv_agent_name.set('N/A')
     
-    def debug(self, message: str):
+    def debug(self, message: str, **kwargs):
         """Log a DEBUG-level message."""
-        self.logger.debug(message)
+        self.logger.debug(message, **kwargs)
     
-    def info(self, message: str):
+    def info(self, message: str, **kwargs):
         """Log an INFO-level message."""
-        self.logger.info(message)
+        self.logger.info(message, **kwargs)
     
-    def warning(self, message: str):
+    def warning(self, message: str, **kwargs):
         """Log a WARNING-level message."""
-        self.logger.warning(message)
+        self.logger.warning(message, **kwargs)
     
-    def error(self, message: str, exc_info: bool = False):
+    def error(self, message: str, exc_info: bool = False, **kwargs):
         """Log an ERROR-level message."""
-        self.logger.error(message, exc_info=exc_info)
+        self.logger.error(message, exc_info=exc_info, **kwargs)
     
-    def exception(self, message: str):
+    def exception(self, message: str, **kwargs):
         """Log an exception with stack trace."""
-        self.logger.exception(message)
+        self.logger.exception(message, **kwargs)
     
-    def critical(self, message: str):
+    def critical(self, message: str, **kwargs):
         """Log a CRITICAL-level message."""
-        self.logger.critical(message)
+        self.logger.critical(message, **kwargs)
     
     def addHandler(self, handler):
         """Add a handler to the underlying logger."""
@@ -174,32 +200,32 @@ def setup_logger(log_dir: Optional[str] = None, log_level: int = logging.INFO) -
 
 
 # Convenience wrappers for the global logger
-def debug(message: str):
+def debug(message: str, **kwargs):
     """Log a DEBUG-level message."""
-    get_logger().debug(message)
+    get_logger().debug(message, **kwargs)
 
 
-def info(message: str):
+def info(message: str, **kwargs):
     """Log an INFO-level message."""
-    get_logger().info(message)
+    get_logger().info(message, **kwargs)
 
 
-def warning(message: str):
+def warning(message: str, **kwargs):
     """Log a WARNING-level message."""
-    get_logger().warning(message)
+    get_logger().warning(message, **kwargs)
 
 
-def error(message: str, exc_info: bool = False):
+def error(message: str, exc_info: bool = False, **kwargs):
     """Log an ERROR-level message."""
-    get_logger().error(message, exc_info=exc_info)
+    get_logger().error(message, exc_info=exc_info, **kwargs)
 
 
-def exception(message: str):
+def exception(message: str, **kwargs):
     """Log an exception."""
-    get_logger().exception(message)
+    get_logger().exception(message, **kwargs)
 
 
-def critical(message: str):
+def critical(message: str, **kwargs):
     """Log a CRITICAL-level message."""
-    get_logger().critical(message)
+    get_logger().critical(message, **kwargs)
 

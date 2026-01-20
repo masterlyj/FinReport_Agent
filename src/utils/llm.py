@@ -271,3 +271,8 @@ class AsyncLLM:
 
         logger.warning("没有可移除的消息，停止重试")
         return False
+
+    async def close(self):
+        """关闭底层客户端"""
+        if self.client:
+            await self.client.close()

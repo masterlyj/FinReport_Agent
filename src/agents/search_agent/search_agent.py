@@ -337,10 +337,10 @@ class DeepSearchAgent(BaseAgent):
             checkpoint_name=checkpoint_name,
         )
         agent_result = DeepSearchResult(
-            query=input_data['query'], 
-            name=f"Summary of the search process for {input_data['query']}", 
-            description=run_result['final_result'],
-            data=run_result['final_result'], 
+            query=input_data.get('query', 'Unknown Query'), 
+            name=f"Summary of the search process for {input_data.get('query', 'unknown')}", 
+            description=run_result.get('final_result', 'No result generated'),
+            data=run_result.get('final_result', 'No result generated'), 
             source=self.AGENT_NAME
         )
         self.memory.add_data(agent_result)
@@ -348,9 +348,10 @@ class DeepSearchAgent(BaseAgent):
         
 # TODO: add agentresult class
 class DeepSearchResult(ToolResult):
+    query: str = ""
+
     def __init__(self, query, name, description, data, source=""):
-        super().__init__(name, description, data, source)
-        self.query = query
+        super().__init__(name=name, description=description, data=data, source=source, query=query)
 
     def __str__(self):
         format_output = f'Summary Search Result for {self.query}\n'

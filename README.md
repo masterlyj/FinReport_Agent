@@ -103,9 +103,10 @@ FinReport_Agent/
 │   │   ├── data_collector/        # 数据采集智能体
 │   │   ├── data_analyzer/         # 数据分析智能体
 │   │   ├── report_generator/      # 报告生成智能体
-│   │   └── search_agent/          # 搜索智能体
+│   │   └── search_agent/          # 搜索智能体 (DeepSearch)
 │   ├── config/                    # 配置管理
 │   │   ├── config.py              # 配置加载器
+│   │   ├── models.py              # Pydantic 配置模型
 │   │   └── default_config.yaml    # 默认配置
 │   ├── memory/                    # 记忆管理
 │   │   └── variable_memory.py     # 共享变量空间
@@ -113,14 +114,16 @@ FinReport_Agent/
 │   │   ├── financial/             # 财务数据工具
 │   │   ├── macro/                 # 宏观经济工具
 │   │   ├── industry/              # 行业数据工具
-│   │   └── web/                   # 网络搜索工具
+│   │   └── web/                   # 网络搜索工具 (支持多引擎策略)
 │   ├── utils/                     # 工具函数
 │   │   ├── llm.py                 # LLM封装
-│   │   ├── code_executor.py       # 代码执行器
-│   │   ├── prompt_loader.py       # 提示词加载器
+│   │   ├── code_executor_async.py # 异步代码执行器 (核心)
+│   │   ├── code_executor.py       # (Legacy) 同步执行器
+│   │   ├── prompt_loader.py       # YAML提示词加载器 (支持多类型报告)
 │   │   └── ...
 │   └── template/                  # 报告模板
-│       ├── company_outline.md     # 公司报告大纲
+│       ├── company_outline.md     # 公司报告大纲 (中/英)
+│       ├── industry_outline_zh.md # 行业报告大纲
 │       └── report_template.docx   # Word样式模板
 │
 ├── demo/                          # Web演示
@@ -158,9 +161,9 @@ FinReport_Agent/
 
 **职责**:
 - 提供智能体的基础功能框架
-- 管理代码执行器 (AsyncCodeExecutor)
-- 实现检查点保存/加载
-- 提供日志和工具管理
+- 管理异步代码执行器 (`AsyncCodeExecutor`)
+- 实现基于 `dill` 的状态保存与断点续传
+- 统一的日志 (`get_logger`) 与工具管理
 
 **核心方法**:
 ```python
@@ -171,33 +174,28 @@ class BaseAgent:
 ```
 
 **关键特性**:
-- 每个智能体有唯一ID: `agent_{AGENT_NAME}_{uuid}`
-- 独立工作目录: `{working_dir}/agent_working/{agent_id}`
-- 支持代码执行环境隔离
+- **执行环境隔离**: 每个智能体拥有独立的 `working_dir` 和 `executor_cache`
+- **灵活恢复**: 支持从 `latest.pkl` 或指定检查点恢复执行状态
+- **提示词解耦**: 结合 `PromptLoader` 实现提示词与代码逻辑分离
 
 #### 3.1.2 DataCollector (数据采集智能体)
 
 **位置**: `src/agents/data_collector/data_collector.py`
 
 **职责**:
-- 根据任务自动选择合适的数据源
-- 调用工具采集结构化和非结构化数据
-- 将采集结果保存到Memory
+- 根据任务描述自动拆解并选择合适的数据源
+- 调用 `DeepSearchAgent` 或 API 工具采集结构化/非结构化数据
+- 通过 `PromptLoader` 加载动态提示词，支持不同类型的报告采集需求
 
 **默认工具**:
-- DeepSearchAgent (网络搜索)
-- 所有financial/工具 (股票、财报)
-- 所有macro/工具 (宏观经济)
-- 所有industry/工具 (行业数据)
+- **DeepSearchAgent**: 多引擎协同的网络深度搜索
+- **Financial Tools**: 股票行情、财务报表、分红派息等
+- **Macro/Industry Tools**: 宏观经济指标、行业景气度数据
 
-**执行流程**:
-```
-1. 接收任务描述
-2. LLM分析任务，选择合适工具
-3. 执行工具调用 (通过<execute>代码块)
-4. 保存结果到Memory
-5. 重复直到数据充足
-```
+**执行逻辑**:
+1. LLM 分析任务，决定调用哪些工具
+2. 生成 Python 代码片段通过 `call_tool` 执行
+3. 采集结果通过 `save_result` 存入 `Memory` 空间
 
 **Prompt变量**:
 - `{task}`: 采集任务
@@ -209,66 +207,33 @@ class BaseAgent:
 **位置**: `src/agents/data_analyzer/data_analyzer.py`
 
 **职责**:
-- 对采集的数据进行分析
-- 生成专业图表 (支持VLM优化)
-- 生成分析报告
+- 对采集到的数据进行深度加工与多维分析
+- **VLM 驱动的图表优化**: 自动生成 Matplotlib 图表，并利用多模态模型 (VLM) 进行审美评估与迭代修改
+- 生成包含图表引用和专业见解的报告草稿
 
-**核心能力**:
-- **代码优先分析**: LLM生成Python代码进行分析
-- **图表生成**: 自动生成专业级图表
-- **VLM优化循环**: 
-  1. LLM生成图表代码
-  2. 执行生成图表
-  3. VLM评估质量
-  4. 根据反馈优化 (最多3轮)
+**核心流程**:
+- **Phase 1 (分析与绘图)**: 从 Memory 获取数据 -> 编写分析代码 -> 生成图表文件 -> VLM 评估反馈 -> 循环优化
+- **Phase 2 (草稿生成)**: 结合分析结论与图表，利用 `REPORT_DRAFT_PROMPT` 生成结构化文档
 
-**执行阶段**:
-```
-Phase 1: 数据分析
-  - 获取Memory中的数据
-  - 执行分析代码
-  - 生成图表
-
-Phase 2: 报告草稿
-  - 整合分析结果
-  - 生成文本报告
-```
-
-**代码执行器暴露的变量**:
-```python
-collect_data_list        # 采集的数据列表
-get_existed_data(id)     # 获取指定数据
-get_data_from_deep_search(query)  # 深度搜索
-session_output_dir       # 图表输出目录
-custom_palette           # 自定义配色方案
-```
+**注入变量**:
+- `collect_data_list`: 当前已采集的所有数据列表
+- `get_existed_data(id)`: 精确获取特定索引的数据
+- `session_output_dir`: 图表存储目录
+- `custom_palette`: 预设的专业金融配色方案 (Deep Crimson, Bright Red 等)
 
 #### 3.1.4 ReportGenerator (报告生成智能体)
 
 **位置**: `src/agents/report_generator/report_generator.py`
 
 **职责**:
-- 生成报告大纲
-- 逐节撰写报告内容
-- 生成封面、摘要、参考文献
-- 渲染为Word/PDF格式
+- 负责最终报告的结构规划、章节撰写与多格式渲染
+- **多模板支持**: 根据 `target_type` (公司/行业/宏观) 自动切换大纲模板
+- **后处理自动化**: 自动生成封面、摘要、图表目录及参考文献
 
 **执行阶段**:
-```
-Phase 1: 大纲生成
-  - LLM生成报告大纲
-  - VLM/LLM评估和优化
-
-Phase 2: 章节撰写
-  - 逐节生成内容
-  - 引用Memory中的数据和图表
-
-Phase 3: 后处理
-  - 生成封面
-  - 生成摘要和标题
-  - 添加参考文献
-  - 渲染为Word/PDF
-```
+1. **大纲阶段 (Outline)**: 结合任务与模板生成初步大纲，并经过 Critique 循环优化
+2. **撰写阶段 (Writing)**: 逐章节异步生成内容，利用 `IndexBuilder` 检索相关数据片段
+3. **渲染阶段 (Post-process)**: 将 Markdown 转化为 Word，并支持通过 Pandoc 进一步导出 PDF
 
 **报告模板**:
 - Markdown格式: 便于版本控制和预览
@@ -415,11 +380,11 @@ llm_config_list:
 **核心配置项**:
 ```yaml
 # 目标配置
-target_name: "公司名称"
-stock_code: "000001"
-target_type: "financial_company"  # financial_company | macro | industry | general
+target_name: "公司/行业/宏观名称"
+stock_code: "000001"            # 可选，仅在 financial_company 类型时推荐
+target_type: "financial_company" # 可选: financial_company, macro, industry, general
 output_dir: "./outputs/my-research"
-language: "en"  # en | zh
+language: "zh"                   # 支持: zh, en
 
 # 模板路径
 reference_doc_path: 'src/template/report_template.docx'
@@ -448,15 +413,15 @@ llm_config_list:
 
 **核心模块**:
 
-| 模块 | 功能 |
+| 模块 | 功能描述 |
 |------|------|
-| `llm.py` | LLM封装，支持OpenAI兼容API |
-| `code_executor.py` | 异步代码执行器，沙箱环境 |
-| `prompt_loader.py` | YAML提示词加载器 |
-| `logger.py` | 日志系统，支持agent context |
-| `index_builder.py` | 向量索引构建 (语义搜索) |
-| `figure_helper.py` | 图表辅助函数 |
-| `helper.py` | 通用工具函数 |
+| `llm.py` | 统一 LLM 访问接口，支持流式输出与 JSON 模式 |
+| `code_executor_async.py` | 异步代码执行环境，支持变量生命周期管理与异常捕获 |
+| `prompt_loader.py` | 动态 YAML 提示词加载，支持按报告类型 (`financial`/`macro` 等) 自动路由 |
+| `logger.py` | 带 Agent 上下文的结构化日志系统，自动按 Agent ID 隔离日志 |
+| `index_builder.py` | 基于语义的向量索引构建，用于报告章节的长上下文检索 |
+| `figure_helper.py` | 金融图表绘制辅助工具 (K线图、数据透视等) |
+| `async_helpers.py` | 跨异步环境的任务安全运行工具 |
 
 **AsyncCodeExecutor特性**:
 - 安全的代码执行环境

@@ -10,15 +10,16 @@ This module provides comprehensive web search capabilities including:
 from .base_search import SearchResult, ImageSearchResult
 from .quota_manager import QuotaManager
 from .search_engine_pool import SearchEnginePool, SearchStrategy, create_default_pool
-from .search_engine_tavily import TavilySearch
-from .search_engine_requests import (
+from .search_engines import (
+    TavilySearch,
     SerperSearch,
     BingSearch,
     DuckDuckGoSearch,
     SogouSearch,
     BochaSearch,
     InDomainSearch_Request,
-    BingImageSearch
+    BingImageSearch,
+    PlaywrightSearch
 )
 from .web_crawler import Click, ClickResult
 
@@ -44,9 +45,9 @@ __all__ = [
     "BochaSearch",
     "InDomainSearch_Request",
     "BingImageSearch",
+    "PlaywrightSearch",
     
     # Crawler
     "Click",
     "ClickResult",
 ]
-

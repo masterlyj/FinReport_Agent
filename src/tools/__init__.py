@@ -9,15 +9,8 @@ import inspect
 from typing import Dict, List, Type, Any, Optional
 from .base import Tool, ToolResult
 
-from .web.web_crawler import *
-from .web.search_engine_requests import *
-from .web.search_engine_playwright import *
-from .web.base_search import *
-from .macro.macro import *
-from .financial.company_statements import *
-from .financial.stock import *
-from .financial.market import *
-from .industry.industry import *
+# Note: tools are automatically discovered and registered via _auto_register_tools() at the end of this file.
+# Avoid wildcard imports here to prevent circular dependencies and namespace pollution.
 
 # Global registry for all tools
 _REGISTERED_TOOLS: Dict[str, Type[Tool]] = {}

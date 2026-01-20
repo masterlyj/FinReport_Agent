@@ -21,7 +21,7 @@ if __name__ == "__main__":
     )
 
     memory = Memory(config=config)
-    # memory.load()
+    memory.load()
     # print(memory.get_analysis_result()[0])
     # assert False
 
@@ -32,9 +32,24 @@ if __name__ == "__main__":
         use_embedding_name=os.getenv("EMBEDDING_MODEL_NAME"),
         memory=memory
     )
-    result = asyncio.run(agent.async_run(
-        input_data={'task': '商汤科技', 'analysis_task': '商汤科技的主要营收来源'}, echo=True, max_iterations=10, enable_chart=True)
-    )
+    try:
+        result = asyncio.run(agent.async_run(
+            input_data={'task': '浪潮信息', 'analysis_task': '基于已有数据，绘制净利润趋势图'}, echo=True, max_iterations=10, enable_chart=True)
+        )
+    except Exception as e:
+        print(f"Error executing agent: {e}")
+        import traceback
+        traceback.print_exc()
+        result = {}
+    
+    # Check for generated charts
+    chart_dir = os.path.join(config.working_dir, 'charts')
+    if os.path.exists(chart_dir):
+        print(f"\nGenerated charts in {chart_dir}:")
+        for file in os.listdir(chart_dir):
+            print(f"- {file}")
+    else:
+        print(f"\nNo charts directory found at {chart_dir}")
     print(result)
     print(result['final_result'][:100000])
     print(len(memory.data))

@@ -1,6 +1,7 @@
 import pandas as pd
 import uuid
 from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from ..utils.retry import async_retry, async_safe_execute
 from ..utils.logger import get_logger
 
@@ -82,21 +83,27 @@ class Tool:
         return await _fetch()
 
 
-class ToolResult:
+class ToolResult(BaseModel):
     """
-    工具执行结果的封装类
-
+    工具执行结果的封装类 (Pydantic Model)
+    
     提供统一的数据访问接口和格式化输出
     """
-    def __init__(self, name: str, description: str, data: Any, source: str = ""):
-        self.name = name
-        self.description = description
-        # 自动解包单元素列表
-        if isinstance(data, list) and len(data) == 1:
-            data = data[0]
-        self.data = data
-        self.data_type = type(data)
-        self.source = source
+    name: str = Field(..., description="Tool/Data name")
+    description: str = Field(..., description="Description of the result")
+    data: Any = Field(..., description="The actual data payload")
+    source: str = Field("", description="Source of the data")
+    
+    # 允许任意类型（如 pandas DataFrame）
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @model_validator(mode='before')
+    @classmethod
+    def unpack_single_element_list(cls, data: Any) -> Any:
+        # 从原始类中自动解包单元素列表的逻辑
+        if isinstance(data, dict) and 'data' in data and isinstance(data['data'], list) and len(data['data']) == 1:
+            data['data'] = data['data'][0]
+        return data
 
     def brief_str(self):
         return self.__str__()
@@ -132,4 +139,6 @@ class ToolResult:
         return hash(self.name+self.description)
     
     def __eq__(self, other):
+        if not isinstance(other, ToolResult):
+            return False
         return self.name == other.name and self.description == other.description
